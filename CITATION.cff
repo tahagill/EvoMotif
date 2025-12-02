@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Taha"
+    given-names: ""
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+title: "EvoMotif: Evolution-Driven Framework for Protein Motif Discovery"
+version: 0.1.0
+doi: 10.xxxxx/joss.xxxxx
+date-released: 2025-12-02
+url: "https://github.com/yourusername/EvoMotif"
+repository-code: "https://github.com/yourusername/EvoMotif"
+license: MIT
+keywords:
+  - bioinformatics
+  - protein-motifs
+  - evolution
+  - phylogenetics
+  - structural-biology
+  - conservation-analysis
+  - variant-analysis
+preferred-citation:
+  type: article
+  authors:
+    - family-names: "Taha"
+      given-names: ""
+      orcid: "https://orcid.org/0000-0000-0000-0000"
+  title: "EvoMotif: An Evolution-Driven Framework for Discovering Novel Protein Motifs and Their Structural Context"
+  journal: "Journal of Open Source Software"
+  year: 2025
+  doi: "10.xxxxx/joss.xxxxx"
