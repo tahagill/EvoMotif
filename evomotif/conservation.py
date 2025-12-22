@@ -175,6 +175,37 @@ class ConservationScorer:
         
         return conservation
     
+    def calculate_conservation_scores(
+        self,
+        alignment: MultipleSeqAlignment,
+        method: str = "combined",
+        weights: tuple = (0.5, 0.5)
+    ) -> np.ndarray:
+        """
+        Calculate conservation scores using specified method.
+        
+        Args:
+            alignment: MultipleSeqAlignment object
+            method: 'shannon', 'blosum62', or 'combined'
+            weights: (entropy_weight, blosum_weight) if method='combined'
+            
+        Returns:
+            Array of conservation scores
+        """
+        if method == "shannon":
+            entropy = self.calculate_shannon_entropy(alignment)
+            max_entropy = np.log2(20)
+            return 1 - (entropy / max_entropy)
+        elif method == "blosum62":
+            blosum = self.calculate_blosum_score(alignment)
+            return (blosum + 4) / 15
+        else:  # combined
+            return self.calculate_combined_conservation(
+                alignment,
+                entropy_weight=weights[0],
+                blosum_weight=weights[1]
+            )
+    
     def calculate_gap_frequency(
         self,
         alignment: MultipleSeqAlignment
@@ -205,7 +236,8 @@ class ConservationScorer:
         """
         Calculate percentage identity for each column.
         
-        Identity = fraction of sequences matching the consensus.
+        Identity = fraction of sequences matching the consensus amino acid.
+        Gaps are not counted as matching the consensus (treated as non-identity).
         
         Args:
             alignment: MultipleSeqAlignment object

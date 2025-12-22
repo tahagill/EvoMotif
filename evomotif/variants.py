@@ -115,9 +115,11 @@ class VariantAnalyzer:
         Determine which variants fall within motifs.
         
         Args:
-            variants: DataFrame of variants
-            motif_positions: List of (start, end) tuples for motifs
-            alignment_to_structure: Optional mapping for position conversion
+            variants: DataFrame of variants with 'position' column
+            motif_positions: List of (start, end) tuples for motifs (alignment coordinates)
+            alignment_to_structure: Optional mapping {alignment_pos: structure_residue_num}.
+                                   If provided, variant positions are assumed to be structure
+                                   residue numbers and will be converted to alignment positions.
             
         Returns:
             DataFrame with added 'in_motif' column
@@ -126,8 +128,19 @@ class VariantAnalyzer:
         variants['in_motif'] = False
         variants['motif_id'] = None
         
+        # Build reverse mapping if alignment_to_structure provided
+        structure_to_alignment = None
+        if alignment_to_structure:
+            structure_to_alignment = {v: k for k, v in alignment_to_structure.items()}
+        
         for idx, row in variants.iterrows():
             position = row['position']
+            
+            # Convert structure position to alignment position if needed
+            if structure_to_alignment:
+                position = structure_to_alignment.get(position, -1)
+                if position == -1:
+                    continue  # Position not in alignment
             
             # Check if position is in any motif
             for motif_id, (start, end) in enumerate(motif_positions):

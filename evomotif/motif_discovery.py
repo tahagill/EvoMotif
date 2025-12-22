@@ -39,18 +39,18 @@ class MotifDiscoverer:
     def __init__(
         self,
         window_sizes: List[int] = [7, 9, 11, 13, 15],
-        min_conservation: float = 0.85,
-        max_std: float = 0.1,
-        min_gap_free: float = 0.9
+        min_conservation: float = 0.70,
+        max_std: float = 0.15,
+        min_gap_free: float = 0.70
     ):
         """
         Initialize motif discoverer.
         
         Args:
             window_sizes: List of sliding window sizes to try
-            min_conservation: Minimum mean conservation score
-            max_std: Maximum std of conservation within window
-            min_gap_free: Minimum fraction of sequences without gaps
+            min_conservation: Minimum mean conservation score (default: 0.70)
+            max_std: Maximum std of conservation within window (default: 0.15)
+            min_gap_free: Minimum fraction of sequences without gaps (default: 0.70)
         """
         self.window_sizes = window_sizes
         self.min_conservation = min_conservation

@@ -14,15 +14,27 @@ from Bio.Align import MultipleSeqAlignment
 from ete3 import Tree
 import subprocess
 
+# Optional imports for visualization (requires PyQt)
+try:
+    from ete3.treeview import TreeStyle, NodeStyle
+    VISUALIZATION_AVAILABLE = True
+except ImportError:
+    VISUALIZATION_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
 class PhylogeneticAnalyzer:
     """Perform phylogenetic analysis and motif evolution inference."""
     
-    def __init__(self):
-        """Initialize phylogenetic analyzer."""
+    def __init__(self, fasttree_path: str = "fasttree"):
+        """Initialize phylogenetic analyzer.
+        
+        Args:
+            fasttree_path: Path to FastTree executable (default: "fasttree")
+        """
         self.logger = logging.getLogger(__name__)
+        self.fasttree_path = fasttree_path
     
     def build_tree_fasttree(
         self,
@@ -41,7 +53,7 @@ class PhylogeneticAnalyzer:
         Returns:
             ETE3 Tree object
         """
-        cmd = ["FastTree"]
+        cmd = [self.fasttree_path]
         
         # Model selection
         if model.upper() == "WAG":
@@ -72,7 +84,11 @@ class PhylogeneticAnalyzer:
             return tree
             
         except FileNotFoundError:
-            self.logger.error("FastTree not found. Install: http://www.microbesonline.org/fasttree/")
+            self.logger.error(
+                f"FastTree not found at '{self.fasttree_path}'. "
+                "Install: http://www.microbesonline.org/fasttree/ "
+                "or specify correct path in __init__(fasttree_path='...')"
+            )
             raise
         except subprocess.CalledProcessError as e:
             self.logger.error(f"FastTree failed: {e.stderr}")
@@ -216,8 +232,9 @@ class PhylogeneticAnalyzer:
             for child in node.children:
                 fitch_down(child, chosen_state)
         
-        # Run Fitch algorithm
-        tree.traverse(fitch_up, strategy="postorder")
+        # Run Fitch algorithm - correct ETE3 API usage
+        for node in tree.traverse("postorder"):
+            fitch_up(node)
         fitch_down(tree)
         
         self.logger.info(f"Reconstructed ancestral states for motif {motif_id}")
@@ -296,7 +313,7 @@ class PhylogeneticAnalyzer:
             motif_id: Motif ID
             
         Returns:
-            Evolutionary distance (branch length sum) to root
+            Evolutionary distance (branch length sum) from origin to root
         """
         feature_name = f"motif_{motif_id}"
         
@@ -314,8 +331,9 @@ class PhylogeneticAnalyzer:
         else:
             origin_node = tree.get_common_ancestor(leaves_with_motif)
         
-        # Calculate distance to root
-        age = tree.get_distance(tree)
+        # Calculate distance from origin node to root
+        root = tree.get_tree_root()
+        age = tree.get_distance(origin_node, root)
         
         return age
     
@@ -329,12 +347,21 @@ class PhylogeneticAnalyzer:
         """
         Visualize phylogenetic tree with motif annotations.
         
+        Requires PyQt4 or PyQt5 for GUI rendering.
+        
         Args:
             tree: ETE3 Tree object
             output_path: Path to save visualization
             motif_id: Optional motif ID to highlight
             show_bootstrap: Show bootstrap support values
         """
+        if not VISUALIZATION_AVAILABLE:
+            self.logger.error(
+                "Tree visualization requires PyQt4 or PyQt5. "
+                "Install with: pip install PyQt5"
+            )
+            raise ImportError("TreeStyle and NodeStyle not available")
+        
         # Create tree style
         ts = TreeStyle()
         ts.show_leaf_name = True

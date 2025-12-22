@@ -232,20 +232,28 @@ class StatisticalAnalyzer:
         Returns:
             Dictionary with effect size metrics
         """
-        # Cohen's d
+        # Pooled standard deviation
         pooled_std = np.sqrt(
             ((len(group1) - 1) * np.var(group1, ddof=1) +
              (len(group2) - 1) * np.var(group2, ddof=1)) /
             (len(group1) + len(group2) - 2)
         )
-        cohens_d = (np.mean(group1) - np.mean(group2)) / pooled_std
+        
+        if pooled_std == 0:
+            cohens_d = 0.0
+        else:
+            cohens_d = (np.mean(group1) - np.mean(group2)) / pooled_std
         
         # Hedge's g (corrected for small sample size)
         correction = 1 - (3 / (4 * (len(group1) + len(group2)) - 9))
         hedges_g = cohens_d * correction
         
         # Glass's delta (using group2 as control)
-        glass_delta = (np.mean(group1) - np.mean(group2)) / np.std(group2, ddof=1)
+        group2_std = np.std(group2, ddof=1)
+        if group2_std == 0:
+            glass_delta = 0.0
+        else:
+            glass_delta = (np.mean(group1) - np.mean(group2)) / group2_std
         
         return {
             'cohens_d': float(cohens_d),

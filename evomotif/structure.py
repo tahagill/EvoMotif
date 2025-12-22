@@ -28,6 +28,7 @@ class StructureMapper:
         """Initialize structure mapper."""
         self.logger = logging.getLogger(__name__)
         self.parser = PDBParser(QUIET=True)
+        self.pdb_file_path = None  # Store for DSSP
     
     def load_structure(
         self,
@@ -47,10 +48,53 @@ class StructureMapper:
         if structure_id is None:
             structure_id = pdb_file.stem
         
+        self.pdb_file_path = pdb_file  # Store for DSSP
         structure = self.parser.get_structure(structure_id, pdb_file)
         self.logger.info(f"Loaded structure: {structure_id}")
         
         return structure
+    
+    def get_alphafold_confidence(
+        self,
+        structure: Structure,
+        chain_id: str = 'A'
+    ) -> Dict[int, float]:
+        """
+        Extract pLDDT confidence scores from AlphaFold model.
+        
+        AlphaFold models store per-residue confidence (pLDDT) in the 
+        B-factor field of the PDB file. This method extracts those values.
+        
+        Args:
+            structure: BioPython Structure object (AlphaFold model)
+            chain_id: PDB chain identifier
+            
+        Returns:
+            Dictionary mapping {residue_number: pLDDT_score}
+            
+        Note:
+            pLDDT scores range from 0-100:
+            - >90: Very high confidence
+            - 70-90: Confident
+            - 50-70: Low confidence
+            - <50: Very low confidence (disordered)
+        """
+        confidence = {}
+        
+        try:
+            chain = structure[0][chain_id]
+            for residue in chain:
+                if residue.id[0] == ' ':  # Standard residue
+                    # Get B-factor from CA atom (pLDDT in AlphaFold models)
+                    if 'CA' in residue:
+                        plddt = residue['CA'].get_bfactor()
+                        confidence[residue.id[1]] = float(plddt)
+            
+            self.logger.info(f"Extracted pLDDT scores for {len(confidence)} residues")
+        except Exception as e:
+            self.logger.error(f"Failed to extract AlphaFold confidence: {e}")
+        
+        return confidence
     
     def map_alignment_to_structure(
         self,
@@ -60,6 +104,9 @@ class StructureMapper:
     ) -> Dict[int, int]:
         """
         Map alignment positions to structure residue numbers.
+        
+        Uses positional mapping. For robust mapping with indels,
+        consider using pairwise alignment (e.g., Bio.pairwise2).
         
         Args:
             structure: BioPython Structure object
@@ -126,8 +173,11 @@ class StructureMapper:
         # Try to run DSSP for secondary structure and accessibility
         dssp_data = None
         try:
-            dssp_data = DSSP(structure[0], str(structure), dssp=dssp_path)
-            self.logger.info("DSSP analysis completed")
+            if self.pdb_file_path:
+                dssp_data = DSSP(structure[0], str(self.pdb_file_path), dssp=dssp_path)
+                self.logger.info("DSSP analysis completed")
+            else:
+                self.logger.warning("PDB file path not stored; cannot run DSSP")
         except Exception as e:
             self.logger.warning(f"DSSP analysis failed: {e}")
         

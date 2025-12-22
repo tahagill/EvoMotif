@@ -131,7 +131,7 @@ class SequenceRetriever:
         sequences: List[SeqRecord],
         min_length: int = 50,
         max_length: Optional[int] = None,
-        remove_fragments: bool = True
+        remove_fragments: bool = False
     ) -> List[SeqRecord]:
         """
         Filter sequences based on length and quality criteria.
@@ -173,12 +173,13 @@ class SequenceRetriever:
         """
         Remove duplicate sequences based on sequence identity.
         
-        Uses a simple exact match for now. For proper clustering,
-        use CD-HIT externally.
+        Currently uses exact match. The identity_threshold parameter
+        is reserved for future implementation of clustering (e.g., CD-HIT).
+        For now, only 100% identical sequences are removed.
         
         Args:
             sequences: List of SeqRecord objects
-            identity_threshold: Similarity threshold (not used in exact match)
+            identity_threshold: Similarity threshold (currently unused; exact match only)
             
         Returns:
             Deduplicated list of SeqRecord objects
