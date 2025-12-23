@@ -3,7 +3,8 @@
   "description": "EvoMotif is a comprehensive Python framework that combines evolutionary analysis, structural data, and statistical methods to discover and characterize protein motifs. It integrates sequence retrieval, multiple sequence alignment, phylogenetic analysis, conservation scoring, motif discovery, structural mapping, and variant analysis into a unified pipeline.",
   "creators": [
     {
-      "name": "Taha Gill"
+      "name": "Taha Gill",
+      "orcid": "0009-0008-9749-9739"
     }
   ],
   "license": "MIT",
