@@ -11,13 +11,13 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="evomotif",
-    version="0.1.0",
-    author="Taha",
-    author_email="taha@example.com",
+    version="0.1.5",
+    author="Taha Ahmad",
+    author_email="tahagill99@gmail.com",
     description="Evolution-driven framework for discovering novel protein motifs",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/EvoMotif",
+    url="https://github.com/tahagill/EvoMotif",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",

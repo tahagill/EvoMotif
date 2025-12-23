@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "evomotif"
-version = "0.1.1"
+version = "0.1.5"
 description = "Evolution-driven framework for discovering novel protein motifs"
 readme = "README.md"
 authors = [
-    {name = "Taha", email = "taha@example.com"}
+    {name = "Taha Ahmad", email = "tahagill99@gmail.com"}
 ]
 license = {text = "MIT"}
 classifiers = [
@@ -54,10 +54,11 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/EvoMotif"
-Documentation = "https://evomotif.readthedocs.io"
-Repository = "https://github.com/yourusername/EvoMotif"
-"Bug Tracker" = "https://github.com/yourusername/EvoMotif/issues"
+Homepage = "https://github.com/tahagill/EvoMotif"
+Documentation = "https://github.com/tahagill/EvoMotif/blob/main/docs/COMPLETE_GUIDE.md"
+Repository = "https://github.com/tahagill/EvoMotif"
+"Bug Tracker" = "https://github.com/tahagill/EvoMotif/issues"
+DOI = "https://doi.org/10.5281/zenodo.18035111"
 
 [project.scripts]
 evomotif = "evomotif.cli:main"

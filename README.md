@@ -5,8 +5,8 @@
 [![PyPI](https://img.shields.io/pypi/v/evomotif)](https://pypi.org/project/evomotif/)
 [![Python](https://img.shields.io/pypi/pyversions/evomotif)](https://pypi.org/project/evomotif/)
 [![License](https://img.shields.io/pypi/l/evomotif)](LICENSE)
-[![DOI](https://img.shields.io/badge/DOI-pending-blue)](paper/)
-[![Downloads](https://img.shields.io/pypi/dm/evomotif)](https://pypi.org/project/evomotif/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18035111.svg)](https://doi.org/10.5281/zenodo.18035111)
+[![Downloads](https://static.pepy.tech/badge/evomotif)](https://pepy.tech/project/evomotif)
 
 EvoMotif automates the discovery of evolutionarily conserved protein motifs by combining information theory, evolutionary substitution matrices, and rigorous statistical validation. It retrieves homologous sequences, performs multiple sequence alignment, quantifies conservation, identifies significant motifs, and maps results to 3D structures.
 
