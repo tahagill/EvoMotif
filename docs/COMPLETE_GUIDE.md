@@ -1,123 +1,111 @@
-# EvoMotif: Complete Technical Documentation
+# EvoMotif: Complete Technical Guide
 
-**Version:** 1.0.0  
-**Last Updated:** December 23, 2025
-
----
+**Version**: 0.1.0  
+**Last Updated**: December 23, 2025
 
 ## Table of Contents
 
-1. [Introduction](#introduction)
-2. [Installation & Setup](#installation--setup)
-3. [Quick Start](#quick-start)
-4. [Core Algorithms & Logic](#core-algorithms--logic)
-5. [Statistical Methods](#statistical-methods)
-6. [Module Reference](#module-reference)
-7. [Output Formats](#output-formats)
-8. [Advanced Usage](#advanced-usage)
-9. [Best Practices](#best-practices)
-10. [Troubleshooting](#troubleshooting)
+1. [Overview](#overview)
+2. [Installation](#installation)
+3. [Algorithm Details](#algorithm-details)
+4. [Statistical Methods](#statistical-methods)
+5. [API Reference](#api-reference)
+6. [Implementation Guide](#implementation-guide)
+7. [Use Cases](#use-cases)
+8. [Limitations](#limitations)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
-## 1. Introduction
+## Overview
 
-### What is EvoMotif?
+EvoMotif discovers evolutionarily conserved protein motifs by analyzing multiple sequence alignments. The pipeline combines information theory (Shannon entropy), evolutionary substitution matrices (BLOSUM62), permutation-based statistical testing, and FDR correction to identify functionally important regions with high confidence.
 
-EvoMotif is a comprehensive Python library for discovering evolutionarily conserved protein motifs through multi-species sequence analysis. It automates the entire workflow from sequence retrieval to statistical validation and 3D structural mapping.
+**Core principle**: If a residue or motif is conserved across millions of years of evolution, it likely serves an important structural or functional role.
 
-### Key Features
+### Pipeline Stages
 
-- **One-Line Analysis**: Complete protein analysis with a single function call
-- **Scientifically Rigorous**: Statistical validation with multiple testing correction
-- **Publication Ready**: Generates figures, tables, and supplementary data
-- **AlphaFold Integration**: Correlate conservation with structural confidence
-- **Flexible**: Use high-level API or individual modules for custom workflows
-
-### Scientific Rationale
-
-**Why study conserved motifs?**
-
-Evolutionarily conserved regions in proteins indicate:
-- **Functional importance**: Essential for protein activity
-- **Structural constraints**: Required for proper folding
-- **Interaction sites**: Binding domains for other molecules
-- **Disease relevance**: Mutations in conserved regions often pathogenic
-
-**EvoMotif's Approach:**
-
-1. **Multi-species comparison** reduces noise and increases signal
-2. **Combined metrics** (Shannon entropy + BLOSUM62) capture both variability and functional constraints
-3. **Statistical validation** ensures discoveries are not random patterns
-4. **3D mapping** connects sequence conservation to structural context
+1. **Retrieval**: Query NCBI for homologous sequences
+2. **Alignment**: Multiple sequence alignment with MAFFT
+3. **Conservation**: Calculate per-position conservation scores
+4. **Discovery**: Identify conserved motifs using sliding windows
+5. **Validation**: Statistical testing with permutation and FDR
+6. **Phylogeny**: Build evolutionary tree with FastTree
+7. **Structure**: Map conservation to 3D coordinates (optional)
 
 ---
 
-## 2. Installation & Setup
+## Installation
 
 ### System Requirements
 
-- **OS**: Linux, macOS, or Windows (WSL recommended)
-- **Python**: 3.8 or higher
-- **RAM**: 8GB minimum, 16GB recommended
-- **Storage**: 2GB for software + space for results
+- Python 3.8 or higher
+- 8GB RAM minimum (16GB recommended for large proteins)
+- Linux, macOS, or Windows with WSL
+- Internet connection (for NCBI queries)
 
 ### External Dependencies
 
-EvoMotif requires these bioinformatics tools:
+EvoMotif requires three bioinformatics tools:
 
-1. **MAFFT** (Multiple sequence alignment)
-   ```bash
-   # Ubuntu/Debian
-   sudo apt-get install mafft
-   
-   # macOS
-   brew install mafft
-   
-   # Conda
-   conda install -c bioconda mafft
-   ```
+**MAFFT** - Multiple sequence alignment
+```bash
+# Ubuntu/Debian
+sudo apt-get install mafft
 
-2. **FastTree** (Phylogenetic tree inference)
-   ```bash
-   # Ubuntu/Debian
-   sudo apt-get install fasttree
-   
-   # macOS
-   brew install fasttree
-   
-   # Conda
-   conda install -c bioconda fasttree
-   ```
+# macOS
+brew install mafft
 
-3. **DSSP** (Optional - for secondary structure)
-   ```bash
-   # Ubuntu/Debian
-   sudo apt-get install dssp
-   
-   # macOS
-   brew install dssp
-   
-   # Conda
-   conda install -c salilab dssp
-   ```
+# Conda
+conda install -c bioconda mafft
+
+# Verify installation
+mafft --version  # Should show v7.x or higher
+```
+
+**FastTree** - Phylogenetic tree inference
+```bash
+# Ubuntu/Debian
+sudo apt-get install fasttree
+
+# macOS
+brew install fasttree
+
+# Conda
+conda install -c bioconda fasttree
+
+# Verify
+FastTree -help  # Should show usage info
+```
+
+**DSSP** (Optional) - Secondary structure assignment
+```bash
+# Ubuntu/Debian
+sudo apt-get install dssp
+
+# macOS
+brew install dssp
+
+# Conda
+conda install -c salilab dssp
+```
 
 ### Python Installation
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/EvoMotif.git
-cd EvoMotif
+git clone https://github.com/yourusername/evomotif.git
+cd evomotif
 
 # Create virtual environment
 python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-# Install EvoMotif
+# Install
 pip install -e .
 
-# Verify installation
-python -c "import evomotif; print('EvoMotif installed successfully!')"
+# Verify
+python -c "import evomotif; print('Success')"
 ```
 
 ### Verify Dependencies
@@ -133,1263 +121,1344 @@ for tool, available in deps.items():
     print(f"{status} {tool}")
 ```
 
----
-
-## 3. Quick Start
-
-### Basic Analysis (2 Lines)
-
-```python
-import evomotif
-
-# Analyze any protein by name
-results = evomotif.analyze_protein("hemoglobin", "your@email.com")
-
-# View summary
-print(results.summary())
+Expected output:
 ```
-
-**Output:**
-```
-============================================================
-EvoMotif Analysis Results: hemoglobin
-============================================================
-Sequences analyzed: 24
-Consecutive motifs found: 9
-Conserved positions: 73
-Mean conservation: 0.642
-Max conservation: 1.000
-
-Top 5 motifs:
-  1. GAEAL (pos 26-30, cons=0.735)
-  2. HGKKV (pos 43-47, cons=0.843)
-  3. SDLHA (pos 51-55, cons=0.688)
-  ...
-
-📁 Results saved to: hemoglobin_results/
-============================================================
-```
-
-### With 3D Structure
-
-```python
-# Map conservation to PDB structure
-results = evomotif.analyze_protein(
-    protein_name="p53",
-    email="your@email.com",
-    pdb_id="1TUP",  # DNA-binding domain
-    min_conservation=0.70
-)
-
-# Access structure file
-structure_file = results.get_file('structure')
-```
-
-### Custom Parameters
-
-```python
-results = evomotif.analyze_protein(
-    protein_name="BRCA1",
-    email="your@email.com",
-    output_dir="./my_analysis",
-    max_sequences=100,        # More sequences = better statistics
-    min_conservation=0.65,    # Lower threshold = more motifs
-    threads=8,                # Parallel processing
-    verbose=True             # Show detailed progress
-)
-```
-
-### Working with Results
-
-```python
-# Access data programmatically
-motifs = results.motifs
-conserved_pos = results.conserved_positions
-conservation = results.conservation_scores
-
-# Export to JSON
-results.export_json("my_results.json")
-
-# Get specific files
-fasta_file = results.get_file('sequences')
-alignment_file = results.get_file('alignment')
-tree_file = results.get_file('tree')
-
-# Iterate over motifs
-for motif in results.motifs:
-    print(f"Motif at {motif['start']}-{motif['end']}: {motif['sequence']}")
-    print(f"  Conservation: {motif['conservation']:.3f}")
-    print(f"  Sequences: {len(motif['sequences'])}")
+✓ python
+✓ mafft
+✓ fasttree
+✓ biopython
+✓ numpy
+✓ scipy
 ```
 
 ---
 
-## 4. Core Algorithms & Logic
+## Algorithm Details
 
-### 4.1 Sequence Retrieval Strategy
+### 1. Sequence Retrieval
 
-**Algorithm:** Intelligent NCBI querying with redundancy filtering
+**Purpose**: Obtain diverse, high-quality homologous sequences from NCBI
 
-**Logic:**
-1. Query NCBI Protein database with protein name
-2. Filter by taxonomy (prioritize model organisms)
-3. Remove redundant sequences (>95% identity)
-4. Ensure diverse taxonomic sampling
-
-**Why This Approach?**
-- **Diversity**: Captures evolutionary breadth
-- **Quality**: Model organisms have well-annotated sequences
-- **Statistical power**: Multiple sequences improve conservation detection
-- **Efficiency**: Redundancy removal reduces computational cost
-
-**Implementation:**
-```python
-# Retrieval module logic
-def fetch_sequences(protein_name, email, max_sequences=50):
-    """
-    Smart retrieval with quality filters.
-    
-    Steps:
-    1. Search NCBI with protein name
-    2. Fetch sequences in batches
-    3. Remove sequences with ambiguous residues (X, B, Z)
-    4. Cluster by similarity (CD-HIT-like approach)
-    5. Select representative sequences
-    6. Return diverse, high-quality set
-    """
-```
-
-**Parameters Explained:**
-- `max_sequences`: More sequences improve statistics but increase runtime
-  - Minimum: 10 (basic analysis)
-  - Recommended: 50-100 (robust analysis)
-  - Maximum: 500 (comprehensive, slow)
-
-### 4.2 Conservation Scoring Algorithm
-
-**Combined Metric Approach**
-
-EvoMotif uses **two complementary metrics** to measure conservation:
-
-#### A. Shannon Entropy (Information Theory)
-
-**What It Measures:** Variability/uncertainty at each position
-
-**Mathematical Formula:**
-$$H(i) = -\sum_{a \in \text{amino acids}} p_a(i) \log_2 p_a(i)$$
-
-**Normalized Conservation Score:**
-$$C_{\text{shannon}}(i) = 1 - \frac{H(i)}{\log_2(20)}$$
-
-**Interpretation:**
-- **Score = 1.0**: All sequences have identical amino acid (perfect conservation)
-- **Score = 0.5**: Moderate variability
-- **Score = 0.0**: Maximum variability (all 20 amino acids equally likely)
-
-**Why Shannon Entropy?**
-- Quantifies information content
-- Sensitive to rare variants
-- Mathematical foundation in information theory
-- No biological assumptions
-
-**Example:**
-```
-Position 45: [H, H, H, H, H, H, H, H, H, R]
-- H appears 90%, R appears 10%
-- H(45) = -(0.9×log₂(0.9) + 0.1×log₂(0.1)) = 0.469 bits
-- C_shannon(45) = 1 - 0.469/4.322 = 0.891 (highly conserved)
-```
-
-#### B. BLOSUM62 Score (Evolutionary Perspective)
-
-**What It Measures:** Evolutionary substitution patterns
-
-**Mathematical Formula:**
-$$B(i) = \frac{1}{n(n-1)} \sum_{j<k} \text{BLOSUM62}(a_j, a_k)$$
-
-Where:
-- $a_j, a_k$ = amino acids at position $i$ in sequences $j, k$
-- BLOSUM62 = empirical substitution matrix from aligned protein blocks
-
-**Normalized Score:**
-$$B_{\text{norm}}(i) = \frac{B(i) - B_{\text{min}}}{B_{\text{max}} - B_{\text{min}}}$$
-
-**BLOSUM62 Matrix Philosophy:**
-- Positive scores: Functionally similar (conservative substitutions)
-- Negative scores: Functionally dissimilar (radical substitutions)
-- Example: H ↔ R = -1 (similar: both basic), H ↔ D = -3 (different: basic vs acidic)
-
-**Why BLOSUM62?**
-- Captures functional constraints
-- Based on real evolutionary data
-- Distinguishes conservative vs. radical changes
-- Widely validated in bioinformatics
-
-**Example:**
-```
-Position 45: [H, H, H, H, H, H, H, H, H, R]
-Pairwise scores:
-- BLOSUM62(H, H) = 8 (identical)
-- BLOSUM62(H, R) = 0 (neutral substitution)
-Average score ≈ 7.8 (high, indicates conservative evolution)
-B_norm(45) = 0.78 (functionally conserved)
-```
-
-#### C. Combined Conservation Score
-
-**Formula:**
-$$C_{\text{final}}(i) = 0.5 \times C_{\text{shannon}}(i) + 0.5 \times B_{\text{norm}}(i)$$
-
-**Why Combine Both?**
-1. **Shannon**: Detects identical residues (structural/catalytic importance)
-2. **BLOSUM**: Detects functional equivalence (e.g., Leu ↔ Ile, both hydrophobic)
-3. **Together**: Captures both strict and functional conservation
-
-**Real Example (from hemoglobin analysis):**
-```
-Position 59 (Histidine - heme binding):
-- Shannon score: 0.93 (mostly His, few Tyr)
-- BLOSUM score: 0.85 (His/Tyr both aromatic, functionally similar)
-- Combined: 0.89 (highly conserved + functionally important)
-```
-
-**Implementation:**
-```python
-def calculate_conservation(alignment):
-    """
-    Calculate combined conservation scores.
-    
-    Algorithm:
-    1. For each alignment column:
-       a. Calculate Shannon entropy
-       b. Calculate average BLOSUM62 score
-       c. Normalize both to [0, 1]
-       d. Combine with equal weights
-    2. Return final scores (0 = variable, 1 = conserved)
-    """
-    shannon_scores = calculate_shannon_entropy(alignment)
-    blosum_scores = calculate_blosum_score(alignment)
-    
-    # Equal weighting (can be tuned for specific applications)
-    combined = 0.5 * shannon_scores + 0.5 * blosum_scores
-    
-    return combined
-```
-
-### 4.3 Motif Discovery Algorithm
-
-**Sliding Window Approach with Adaptive Thresholds**
-
-**Algorithm Steps:**
-
-1. **Sliding Window Scanning**
-   ```
-   Alignment: M-S-L-S-D-K-G-K-A-T-V-R-A-I-W-G-K-I-G
-   Conservation: 0.8 0.7 0.8 0.7 0.8 0.7 0.9 0.7 0.8 0.9...
-   
-   Window size 5:
-   [M-S-L-S-D] → avg = 0.76 → candidate
-   [S-L-S-D-K] → avg = 0.74 → candidate
-   [L-S-D-K-G] → avg = 0.78 → candidate
-   ...
-   ```
-
-2. **Threshold Filtering**
-   - Default threshold: 0.70 (tunable)
-   - Only windows with avg conservation ≥ threshold pass
-
-3. **Overlap Resolution**
-   ```
-   Overlapping candidates:
-   [M-S-L-S-D] (0.76)
-   [S-L-S-D-K] (0.74)
-   [L-S-D-K-G] (0.78) ← Keep highest
-   ```
-
-4. **Consecutive Motif Merging**
-   ```
-   Adjacent high-scoring windows merge:
-   [A-I-W-G-K] (0.82) + [W-G-K-I-G] (0.79) 
-   → [A-I-W-G-K-I-G] (0.805)
-   ```
-
-5. **Statistical Validation**
-   - Permutation test: Shuffle conservation scores
-   - Calculate p-value: P(random ≥ observed)
-   - FDR correction: Control for multiple testing
-
-**Why This Algorithm?**
-
-- **Sliding windows**: Detect local conservation patterns
-- **Multiple sizes**: Capture motifs of varying length (7-15 residues typical)
-- **Overlap resolution**: Avoids redundant motifs
-- **Merging**: Finds extended conserved regions
-- **Validation**: Ensures statistical significance
-
-**Parameters:**
+**Implementation**:
 
 ```python
-# Motif discovery parameters
-window_sizes = [7, 9, 11, 13, 15]  # Try multiple lengths
-min_conservation = 0.70            # Threshold for candidates
-max_std = 0.15                     # Maximum variability within motif
-min_gap_free = 0.70                # Require ≥70% sequences without gaps
-```
-
-**Parameter Tuning Guide:**
-- **Higher `min_conservation`** (0.75-0.80): Stricter, fewer motifs, higher confidence
-- **Lower `min_conservation`** (0.60-0.65): Permissive, more motifs, lower confidence
-- **Window sizes**: Smaller (5-7) for short motifs, larger (13-15) for domains
-
-### 4.4 Statistical Validation Logic
-
-**Multi-Level Validation Framework**
-
-#### Level 1: Permutation Testing
-
-**Null Hypothesis:** Observed conservation pattern is random
-
-**Test Procedure:**
-```python
-def permutation_test(observed_conservation, n_permutations=10000):
-    """
-    Test if motif conservation is statistically significant.
-    
-    Steps:
-    1. Calculate observed statistic (mean conservation of motif)
-    2. Generate null distribution:
-       - Randomly shuffle conservation scores
-       - Extract same-length window
-       - Calculate mean conservation
-       - Repeat 10,000 times
-    3. Calculate p-value: fraction of null ≥ observed
-    4. Reject null if p < 0.05
-    """
-    observed_mean = np.mean(observed_conservation)
-    
-    null_distribution = []
-    for _ in range(n_permutations):
-        shuffled = np.random.permutation(all_conservation_scores)
-        random_window = shuffled[:len(observed_conservation)]
-        null_distribution.append(np.mean(random_window))
-    
-    p_value = np.mean(null_distribution >= observed_mean)
-    return p_value
-```
-
-**Why Permutation Tests?**
-- **Non-parametric**: No assumptions about data distribution
-- **Exact**: p-values are exact given the data
-- **Powerful**: Sensitive to patterns in real data
-
-#### Level 2: Multiple Testing Correction
-
-**Problem:** Testing many motifs increases false positives
-
-**Solution:** False Discovery Rate (FDR) control via Benjamini-Hochberg
-
-**Algorithm:**
-```python
-def fdr_correction(p_values, alpha=0.05):
-    """
-    Control false discovery rate across multiple tests.
-    
-    Benjamini-Hochberg procedure:
-    1. Sort p-values: p₁ ≤ p₂ ≤ ... ≤ pₘ
-    2. Find largest i where: pᵢ ≤ (i/m) × α
-    3. Reject H₀ for all tests 1 to i
-    
-    Result: Expected FDR ≤ α (e.g., ≤5% false discoveries)
-    """
-```
-
-**Why FDR vs. Bonferroni?**
-- **Bonferroni**: Too conservative, misses true motifs
-- **FDR**: Balances discovery and false positives
-- **Appropriate**: When finding multiple true signals is expected
-
-#### Level 3: Effect Size Calculation
-
-**Cohen's d for Conservation Differences:**
-
-$$d = \frac{\mu_{\text{motif}} - \mu_{\text{background}}}{\sigma_{\text{pooled}}}$$
-
-**Interpretation:**
-- |d| < 0.2: Small effect (weak conservation)
-- |d| = 0.5: Medium effect (moderate conservation)
-- |d| > 0.8: Large effect (strong conservation)
-
-**Why Effect Sizes?**
-- **Practical significance**: p-value alone doesn't indicate importance
-- **Standardized**: Comparable across studies
-- **Publication quality**: Recommended by statistical guidelines
-
----
-
-## 5. Statistical Methods
-
-### 5.1 Conservation Metrics Summary
-
-| Metric | Formula | Range | Interpretation |
-|--------|---------|-------|----------------|
-| Shannon Entropy | $H = -\sum p \log_2 p$ | 0 (conserved) to 4.32 (variable) | Information content |
-| Shannon Conservation | $C = 1 - H/H_{\max}$ | 0 (variable) to 1 (conserved) | Inverse entropy |
-| BLOSUM62 Score | $\overline{\text{BLOSUM}(i,j)}$ | -4 (dissimilar) to 11 (identical) | Evolutionary constraint |
-| Combined Score | $0.5C_s + 0.5B_n$ | 0 to 1 | Comprehensive conservation |
-| Gap Frequency | $f_{\text{gap}} = n_{\text{gaps}}/n_{\text{seqs}}$ | 0 (no gaps) to 1 (all gaps) | Structural flexibility |
-
-### 5.2 Hypothesis Tests Used
-
-| Test | Purpose | When Used | Why Chosen |
-|------|---------|-----------|------------|
-| **Permutation Test** | Motif significance | Every discovered motif | Non-parametric, exact |
-| **Mann-Whitney U** | Compare two groups | Variant enrichment | Robust to non-normality |
-| **Fisher's Exact** | Categorical associations | Variant distribution | Exact for small samples |
-| **Pearson Correlation** | Linear relationships | Conservation vs. structure | Standard for continuous data |
-| **Kolmogorov-Smirnov** | Distribution comparison | QC checks | Sensitive to differences |
-
-### 5.3 Multiple Testing Corrections
-
-**Available Methods:**
-
-1. **Bonferroni**: $\alpha_{\text{adj}} = \alpha / m$
-   - Use: Small number of tests (<10)
-   - Conservative: Controls family-wise error rate
-
-2. **FDR (Benjamini-Hochberg)**: Adaptive threshold
-   - Use: Many tests (10-1000s)
-   - Recommended: Balances power and false positives
-
-3. **FDR (Benjamini-Yekutieli)**: For dependent tests
-   - Use: Tests are not independent
-   - Conservative than B-H but valid for dependencies
-
-**Implementation:**
-```python
-from statsmodels.stats.multitest import multipletests
-
-reject, adjusted_p, _, _ = multipletests(
-    p_values,
-    alpha=0.05,
-    method='fdr_bh'  # or 'bonferroni', 'fdr_by'
-)
-```
-
-### 5.4 Quality Control Metrics
-
-**Alignment Quality:**
-```python
-# Gap percentage (should be <20%)
-gap_pct = (n_gaps / (n_seqs * length)) * 100
-
-# Sequence identity (should be 30-90%)
-avg_identity = mean_pairwise_identity(alignment)
-
-# Coverage (should be >80%)
-coverage = n_aligned_positions / query_length
-```
-
-**Conservation Quality:**
-```python
-# Dynamic range (should span 0.3-1.0)
-conservation_range = max(scores) - min(scores)
-
-# Distribution shape (should be bimodal)
-hist, bins = np.histogram(scores, bins=20)
-
-# Correlation with structure (if available)
-r, p = pearsonr(conservation, bfactor)
-```
-
----
-
-## 6. Module Reference
-
-### 6.1 Pipeline Module (`evomotif.pipeline`)
-
-**Main Entry Point:**
-
-```python
-from evomotif import analyze_protein
-
-results = analyze_protein(
-    protein_name: str,              # Protein name or identifier
-    email: str,                     # NCBI requires email
-    output_dir: str = None,         # Output directory (default: protein_name/)
-    pdb_id: str = None,             # PDB ID for structure mapping
-    max_sequences: int = 50,        # Number of sequences to retrieve
-    min_conservation: float = 0.70, # Conservation threshold
-    threads: int = 4,               # CPU cores to use
-    verbose: bool = False,          # Print detailed progress
-    check_deps: bool = True         # Check dependencies first
-) -> AnalysisResults
-```
-
-**AnalysisResults Object:**
-
-```python
-class AnalysisResults:
-    # Attributes
-    .protein: str                    # Protein name
-    .n_sequences: int                # Number of sequences analyzed
-    .motifs: List[Dict]              # Discovered motifs
-    .conserved_positions: List[Dict] # Highly conserved positions
-    .conservation_scores: ndarray    # Conservation per position
-    .output_dir: Path                # Results directory
-    .files: Dict[str, Path]          # Output file paths
-    
-    # Methods
-    .summary() -> str                # Human-readable summary
-    .get_file(type) -> Path          # Get specific file path
-    .export_json(path)               # Export to JSON
-```
-
-### 6.2 Retrieval Module (`evomotif.retrieval`)
-
-**SequenceRetriever Class:**
-
-```python
+from Bio import Entrez
 from evomotif.retrieval import SequenceRetriever
 
-retriever = SequenceRetriever(
-    email="your@email.com",          # Required by NCBI
-    api_key=None,                    # Optional: faster queries
-    max_retries=3,                   # Retry failed requests
-    delay=0.5                        # Delay between requests
-)
-
-# Fetch sequences
-sequences = retriever.fetch_sequences(
-    query="hemoglobin alpha",
-    max_results=50,
-    database="protein"
-)
-
-# Save to FASTA
-retriever.save_fasta(sequences, "output.fasta")
+retriever = SequenceRetriever(email="your@email.com")
+sequences = retriever.fetch_sequences("hemoglobin", max_results=100)
 ```
 
-### 6.3 Alignment Module (`evomotif.alignment`)
+**Algorithm steps**:
 
-**SequenceAligner Class:**
+1. **Query NCBI Protein database** with protein name
+2. **Fetch sequence records** in batches (100 per batch for efficiency)
+3. **Quality filtering**:
+   - Remove sequences with ambiguous residues (X, B, Z > 5% of length)
+   - Remove sequences shorter than 50% of median length
+   - Remove sequences with >80% low complexity regions
+4. **Redundancy reduction**:
+   - Cluster sequences by 95% identity threshold
+   - Select representative from each cluster (longest sequence)
+5. **Taxonomic diversity**:
+   - Prioritize sequences from different orders/classes
+   - Prefer model organisms with well-annotated genomes
+
+**Why this approach?**
+- Diversity increases signal-to-noise ratio for conservation
+- Quality control prevents alignment artifacts
+- Redundancy reduction speeds computation without losing information
+
+**Parameters**:
+- `max_results`: More sequences improve statistics but increase runtime
+  - Minimum: 10 (basic analysis)
+  - Recommended: 50-100 (robust statistics)
+  - Maximum: 500 (comprehensive but slow)
+
+**Output**: List of BioPython SeqRecord objects
+
+### 2. Multiple Sequence Alignment
+
+**Purpose**: Align homologous positions across sequences
+
+**Implementation**:
 
 ```python
 from evomotif.alignment import SequenceAligner
 
-aligner = SequenceAligner(
-    tool="mafft",                    # Alignment tool
-    threads=4,                       # CPU cores
-    algorithm="auto"                 # MAFFT algorithm
-)
-
-# Align sequences
-alignment = aligner.align(
-    sequences="input.fasta",
-    output="aligned.fasta",
-    remove_gaps=False
-)
-
-# Alignment statistics
-stats = aligner.get_alignment_stats(alignment)
-# Returns: n_sequences, length, gap_percentage, identity
+aligner = SequenceAligner(threads=8)
+alignment = aligner.align(sequences, output="aligned.fasta")
 ```
 
-### 6.4 Conservation Module (`evomotif.conservation`)
+**Tool**: MAFFT (Multiple Alignment using Fast Fourier Transform)
 
-**ConservationScorer Class:**
+**Algorithm**: MAFFT uses FFT to detect homologous regions, then applies iterative refinement
+
+**Parameters**:
+- `--auto`: Automatic strategy selection based on input size
+- `--thread N`: Parallel processing
+- `--reorder`: Order sequences by similarity (improves visualization)
+
+**Quality metrics**:
+
+After alignment, check:
+```python
+from evomotif.alignment import AlignmentQuality
+
+quality = AlignmentQuality(alignment)
+print(f"Gap percentage: {quality.gap_percentage():.1f}%")  # <20% is good
+print(f"Conservation: {quality.mean_conservation():.3f}")   # >0.5 is good
+print(f"Identity: {quality.pairwise_identity():.3f}")       # 40-60% typical
+```
+
+**Interpretation**:
+- High gaps (>30%): May indicate distant homologs or alignment errors
+- Low conservation (<0.4): Protein family may be too divergent
+- Very high identity (>90%): Redundancy, consider reducing sequences
+
+### 3. Conservation Scoring
+
+**Purpose**: Quantify evolutionary constraint at each alignment position
+
+EvoMotif combines two complementary metrics:
+
+#### A. Shannon Entropy
+
+**Mathematical definition**:
+
+```
+H(i) = -Σ p_a(i) × log₂(p_a(i))
+```
+
+where:
+- `i` = alignment column (position)
+- `a` = amino acid type (20 possibilities)
+- `p_a(i)` = frequency of amino acid `a` at position `i`
+- `H(i)` = entropy in bits (0 to log₂(20) = 4.32 bits)
+
+**Normalized conservation score**:
+
+```
+C_shannon(i) = 1 - H(i) / log₂(20)
+```
+
+Range: [0, 1] where 1 = perfect conservation, 0 = maximum variability
+
+**Example calculation**:
+
+```
+Position 45: [H, H, H, H, H, H, H, H, H, R]
+             (9 His, 1 Arg out of 10 sequences)
+
+p_H = 9/10 = 0.9
+p_R = 1/10 = 0.1
+
+H(45) = -(0.9 × log₂(0.9) + 0.1 × log₂(0.1))
+      = -(0.9 × -0.152 + 0.1 × -3.322)
+      = 0.469 bits
+
+C_shannon(45) = 1 - 0.469/4.322 = 0.891
+```
+
+**Interpretation**: Position 45 is highly conserved (89.1%)
+
+**Why Shannon entropy?**
+- Grounded in information theory
+- Quantifies "surprise" or uncertainty
+- High entropy = high uncertainty = low conservation
+- No biological assumptions required
+- Sensitive to rare variants
+
+#### B. BLOSUM62 Score
+
+**Mathematical definition**:
+
+```
+B(i) = (1 / (n(n-1))) × Σ_{j<k} BLOSUM62(a_j, a_k)
+```
+
+where:
+- `n` = number of sequences
+- `a_j, a_k` = amino acids at position `i` in sequences `j` and `k`
+- BLOSUM62 = substitution score from empirical protein evolution data
+
+**BLOSUM62 matrix** (excerpt):
+
+```
+     A  R  N  D  C  Q  E  G  H  I  L  K  M  F  P  S  T  W  Y  V
+A    4 -1 -2 -2  0 -1 -1  0 -2 -1 -1 -1 -1 -2 -1  1  0 -3 -2  0
+R   -1  5  0 -2 -3  1  0 -2  0 -3 -2  2 -1 -3 -2 -1 -1 -3 -2 -3
+H   -2  0  1 -1 -3  0  0 -2  8 -3 -3 -1 -2 -1 -2 -1 -2 -2  2 -3
+...
+```
+
+Positive scores = functionally similar  
+Negative scores = functionally dissimilar
+
+**Normalized score**:
+
+```
+B_norm(i) = (B(i) - B_min) / (B_max - B_min)
+```
+
+Scaled to [0, 1]
+
+**Example**:
+
+```
+Position 45: [H, H, H, H, H, H, H, H, H, R]
+
+Pairwise comparisons:
+- BLOSUM62(H, H) = 8 (identical, 9 × 8 = 72 comparisons)
+- BLOSUM62(H, R) = 0 (conservative, 9 comparisons)
+- BLOSUM62(R, R) = 5 (would be if more Rs present)
+
+Total pairwise score = 72 × 8 + 9 × 0 = 576
+Number of pairs = 10 × 9 / 2 = 45
+
+B(45) = 576 / 45 = 12.8
+
+Normalized (assuming B_min=-4, B_max=15):
+B_norm(45) = (12.8 - (-4)) / (15 - (-4)) = 0.884
+```
+
+**Why BLOSUM62?**
+- Based on real evolutionary data (aligned protein blocks)
+- Captures functional constraints beyond identity
+- Distinguishes conservative (Leu↔Ile) vs. radical (Lys↔Asp) substitutions
+- Widely validated and used in bioinformatics
+
+#### C. Combined Conservation Score
+
+**Formula**:
+
+```
+C_final(i) = α × C_shannon(i) + (1-α) × B_norm(i)
+```
+
+Default: α = 0.5 (equal weighting)
+
+**Rationale**:
+- Shannon: Detects strict conservation (catalytic residues, structural cores)
+- BLOSUM: Detects functional conservation (physicochemical similarity)
+- Combined: Comprehensive assessment of evolutionary constraint
+
+**Implementation**:
 
 ```python
 from evomotif.conservation import ConservationScorer
 
 scorer = ConservationScorer()
-
-# Calculate conservation
 conservation = scorer.calculate_conservation_scores(
     alignment,
-    method="combined",               # "shannon", "blosum62", or "combined"
-    weights=(0.5, 0.5),             # (shannon_weight, blosum_weight)
-    ignore_gaps=True
-)
-
-# Identify conserved positions
-conserved = scorer.find_conserved_positions(
-    alignment,
-    conservation,
-    threshold=0.70,
-    min_gap_free=0.70
+    method="combined",
+    weights=(0.5, 0.5)  # (Shannon, BLOSUM)
 )
 ```
 
-### 6.5 Motif Discovery Module (`evomotif.motif_discovery`)
+**Tuning weights**:
+- Higher Shannon weight (0.7, 0.3): Emphasize strict identity
+- Higher BLOSUM weight (0.3, 0.7): Emphasize functional equivalence
+- Application-specific: Structural studies may prefer Shannon, functional studies BLOSUM
 
-**MotifDiscoverer Class:**
+### 4. Motif Discovery
+
+**Purpose**: Identify contiguous regions of high conservation
+
+**Algorithm**: Sliding window with adaptive thresholds
+
+#### Step-by-step process:
+
+**Step 1: Window scanning**
 
 ```python
-from evomotif.motif_discovery import MotifDiscoverer
+# Pseudocode
+for window_size in [7, 9, 11, 13, 15]:
+    for start_pos in range(alignment_length - window_size + 1):
+        end_pos = start_pos + window_size
+        window_conservation = conservation[start_pos:end_pos]
+        
+        # Calculate window statistics
+        mean_cons = np.mean(window_conservation)
+        std_cons = np.std(window_conservation)
+        gap_freq = calculate_gap_frequency(alignment[:, start_pos:end_pos])
+        
+        # Apply filters
+        if mean_cons >= min_conservation and \
+           std_cons <= max_std and \
+           gap_freq <= max_gap:
+            candidates.append({
+                'start': start_pos,
+                'end': end_pos,
+                'conservation': mean_cons,
+                'size': window_size
+            })
+```
 
-discoverer = MotifDiscoverer(
-    window_sizes=[7, 9, 11, 13, 15],
-    min_conservation=0.70,
-    max_std=0.15,
-    min_gap_free=0.70
-)
+**Step 2: Overlap resolution**
 
-# Discover consecutive motifs
-motifs = discoverer.find_consecutive_motifs(
-    alignment,
-    conservation_scores
-)
+When multiple windows overlap, keep the highest-scoring:
 
-# Find scattered conserved residues
-scattered = discoverer.find_scattered_residues(
-    alignment,
+```python
+def resolve_overlaps(candidates):
+    # Sort by conservation score (descending)
+    candidates.sort(key=lambda x: x['conservation'], reverse=True)
+    
+    selected = []
+    for candidate in candidates:
+        # Check if overlaps with already selected motifs
+        overlaps = False
+        for selected_motif in selected:
+            if ranges_overlap(candidate, selected_motif):
+                overlaps = True
+                break
+        
+        if not overlaps:
+            selected.append(candidate)
+    
+    return selected
+```
+
+**Step 3: Consecutive merging**
+
+Merge adjacent high-conservation regions:
+
+```python
+def merge_consecutive(motifs):
+    merged = []
+    current = motifs[0]
+    
+    for next_motif in motifs[1:]:
+        # If motifs are adjacent or overlap slightly
+        if next_motif['start'] - current['end'] <= 3:
+            # Merge
+            current['end'] = next_motif['end']
+            current['conservation'] = np.mean([
+                current['conservation'],
+                next_motif['conservation']
+            ])
+        else:
+            merged.append(current)
+            current = next_motif
+    
+    merged.append(current)
+    return merged
+```
+
+**Parameters**:
+
+```python
+# Default configuration
+motif_config = {
+    'window_sizes': [7, 9, 11, 13, 15],  # Try multiple sizes
+    'min_conservation': 0.70,            # Threshold (adjustable)
+    'max_std': 0.15,                     # Consistency within window
+    'max_gap': 0.30,                     # Require 70% coverage
+    'merge_distance': 3                  # Max gap for merging
+}
+```
+
+**Tuning guide**:
+
+| Parameter | Lower value | Higher value |
+|-----------|-------------|--------------|
+| `min_conservation` | More motifs, lower confidence | Fewer motifs, higher confidence |
+| `max_std` | Allow variable windows | Require uniform conservation |
+| `max_gap` | Allow gappy regions | Require well-aligned regions |
+| `window_sizes` | Shorter motifs | Longer domains |
+
+**Example**:
+
+```python
+from evomotif.motif_discovery import MotifFinder
+
+finder = MotifFinder()
+motifs = finder.find_motifs(
     conservation_scores,
-    min_distance=3,
-    max_distance=20
-)
-```
-
-### 6.6 Statistical Analysis Module (`evomotif.stats`)
-
-**StatisticalAnalyzer Class:**
-
-```python
-from evomotif.stats import StatisticalAnalyzer
-
-analyzer = StatisticalAnalyzer(random_seed=42)
-
-# Permutation test
-p_value = analyzer.motif_permutation_test(
-    motif_conservation,
-    all_conservation_scores,
-    n_permutations=10000
+    threshold=0.75,  # Strict
+    window_sizes=[7, 9, 11]  # Shorter motifs
 )
 
-# Multiple testing correction
-reject, adj_p = analyzer.multiple_testing_correction(
-    p_values,
-    method='fdr_bh',
-    alpha=0.05
-)
-
-# Effect size
-effect = analyzer.calculate_effect_size(
-    group1_scores,
-    group2_scores,
-    method='cohens_d'
-)
-```
-
-### 6.7 Phylogenetic Module (`evomotif.phylogeny`)
-
-**PhylogeneticAnalyzer Class:**
-
-```python
-from evomotif.phylogeny import PhylogeneticAnalyzer
-
-phylo = PhylogeneticAnalyzer(
-    method="ml",                     # Maximum likelihood
-    bootstrap=100                    # Bootstrap replicates
-)
-
-# Build tree
-tree = phylo.build_tree(
-    alignment_file="aligned.fasta",
-    output_file="tree.nwk"
-)
-
-# Visualize tree
-phylo.plot_tree(
-    tree_file="tree.nwk",
-    output_file="tree.png",
-    show_labels=True
-)
-```
-
-### 6.8 Structure Module (`evomotif.structure`)
-
-**StructureMapper Class:**
-
-```python
-from evomotif.structure import StructureMapper
-
-mapper = StructureMapper()
-
-# Download PDB structure
-structure = mapper.download_structure(
-    pdb_id="1TUP",
-    output_dir="structures/"
-)
-
-# Map conservation to structure
-mapper.map_conservation_to_structure(
-    structure=structure,
-    conservation_scores=conservation,
-    sequence_alignment=alignment,
-    output_file="conserved_structure.pdb"
-)
-
-# Extract AlphaFold confidence
-confidence = mapper.get_alphafold_confidence(
-    structure=alphafold_structure,
-    chain_id='A'
-)
+# Results
+for motif in motifs:
+    print(f"Motif {motif['sequence']} at {motif['start']}-{motif['end']}")
+    print(f"  Conservation: {motif['conservation']:.3f}")
 ```
 
 ---
 
-## 7. Output Formats
+## Statistical Methods
 
-### 7.1 File Structure
+### 1. Permutation Testing
 
-```
-protein_name_results/
-├── protein_name_sequences.fasta        # Retrieved sequences
-├── protein_name_aligned.fasta          # Multiple sequence alignment
-├── protein_name_conservation.json      # Conservation scores
-├── protein_name_tree.nwk              # Phylogenetic tree (Newick)
-├── protein_name_tree.png              # Tree visualization
-├── conserved_positions.json            # High-conservation positions
-├── protein_name_summary.json          # Complete analysis summary
-├── motifs/
-│   ├── motif_1.fasta                  # Individual motif sequences
-│   ├── motif_2.fasta
-│   └── ...
-└── structure/
-    └── conserved_structure.pdb        # PDB with conservation in B-factor
-```
+**Null hypothesis**: Observed conservation pattern is indistinguishable from random
 
-### 7.2 JSON Formats
+**Test procedure**:
 
-**Conservation JSON:**
-```json
-{
-  "protein": "hemoglobin alpha",
-  "alignment_length": 143,
-  "conservation_scores": [0.799, 0.569, 0.766, ...],
-  "mean_conservation": 0.642,
-  "median_conservation": 0.637,
-  "std_conservation": 0.139
-}
-```
-
-**Conserved Positions JSON:**
-```json
-[
-  {
-    "position": 14,
-    "conservation": 0.999,
-    "gap_frequency": 0.0,
-    "amino_acid": "W",
-    "annotation": "Highly conserved tryptophan"
-  },
-  ...
-]
+```python
+def permutation_test(observed_motif, all_conservation, n_perm=10000):
+    """
+    Calculate p-value for motif conservation.
+    
+    Args:
+        observed_motif: Dict with 'start', 'end', 'conservation'
+        all_conservation: Array of conservation scores for entire alignment
+        n_perm: Number of random permutations
+    
+    Returns:
+        p_value: Fraction of random samples >= observed
+    """
+    # Extract observed statistic
+    motif_length = observed_motif['end'] - observed_motif['start']
+    observed_score = observed_motif['conservation']
+    
+    # Generate null distribution
+    null_scores = []
+    np.random.seed(42)  # Reproducibility
+    
+    for _ in range(n_perm):
+        # Shuffle conservation scores
+        shuffled = np.random.permutation(all_conservation)
+        
+        # Extract random window of same length
+        random_start = np.random.randint(0, len(shuffled) - motif_length)
+        random_window = shuffled[random_start:random_start + motif_length]
+        random_score = np.mean(random_window)
+        
+        null_scores.append(random_score)
+    
+    # Calculate p-value
+    p_value = np.mean(np.array(null_scores) >= observed_score)
+    
+    return p_value
 ```
 
-**Summary JSON:**
-```json
-{
-  "protein": "hemoglobin alpha",
-  "n_sequences": 24,
-  "alignment_stats": {
-    "alignment_length": 143,
-    "gap_percentage": 0.44,
-    "mean_identity": 0.73
-  },
-  "motifs": [
-    {
-      "motif_id": 1,
-      "start": 26,
-      "end": 30,
-      "sequence": "GAEAL",
-      "conservation": 0.735,
-      "p_value": 0.0001,
-      "significant": true
-    }
-  ],
-  "statistics": {
-    "n_motifs": 9,
-    "n_conserved_positions": 73,
-    "mean_conservation": 0.642
-  }
-}
+**Interpretation**:
+- p < 0.001: Very strong evidence for conservation
+- p < 0.01: Strong evidence
+- p < 0.05: Moderate evidence
+- p ≥ 0.05: Insufficient evidence
+
+**Why permutation over parametric tests?**
+- No distributional assumptions
+- Exact p-values for given data
+- Appropriate for complex dependencies in sequence data
+
+### 2. Multiple Testing Correction
+
+**Problem**: Testing many motifs increases false positive rate
+
+Example: Testing 50 motifs at α = 0.05, expect ~2.5 false positives by chance
+
+**Solution**: False Discovery Rate (FDR) control via Benjamini-Hochberg
+
+**Algorithm**:
+
+```python
+def benjamini_hochberg(p_values, alpha=0.05):
+    """
+    Control false discovery rate.
+    
+    Args:
+        p_values: Array of p-values from multiple tests
+        alpha: Desired FDR level
+    
+    Returns:
+        reject: Boolean array indicating which tests reject H0
+        adjusted_p: FDR-adjusted p-values
+    """
+    m = len(p_values)
+    
+    # Sort p-values and track original indices
+    sorted_indices = np.argsort(p_values)
+    sorted_p = p_values[sorted_indices]
+    
+    # Find largest i where p_i <= (i/m) × alpha
+    thresholds = np.arange(1, m + 1) / m * alpha
+    reject = sorted_p <= thresholds
+    
+    if reject.any():
+        max_i = np.where(reject)[0][-1]
+        # Reject all hypotheses up to max_i
+        reject[:max_i + 1] = True
+    
+    # Calculate adjusted p-values (q-values)
+    adjusted_p = np.minimum.accumulate(sorted_p[::-1] * m / np.arange(m, 0, -1))[::-1]
+    adjusted_p = np.minimum(adjusted_p, 1.0)
+    
+    # Restore original order
+    original_order = np.argsort(sorted_indices)
+    reject = reject[original_order]
+    adjusted_p = adjusted_p[original_order]
+    
+    return reject, adjusted_p
 ```
 
-### 7.3 FASTA Formats
+**Example**:
 
-**Sequences FASTA:**
-```
->NP_001299611.1 hemoglobin subunit alpha [Ictidomys tridecemlineatus]
-MVLSPADKNNVKACWEKIGGHGAAYGAEALERMFLSFPTTKTYFPHFDLSHGSAQVQGHG
-KKVADALANAAAHVDDLPGALSTLSDLHAHKLRVDPVNFKLLSHCLLVTLAAHHPAEFTP
-AVHASLDKFLASVSTVLTSKYC
-```
+```python
+# Original p-values for 5 motifs
+p_values = [0.001, 0.012, 0.045, 0.078, 0.150]
 
-**Aligned FASTA:**
-```
->seq1
-MVLSPADKNNVKACWEKIGGHGAAYGAEAL---ERMFLSFPTTKTYFPHFDLSHGSAQVQGHG
->seq2
-MSLSDTDKAVVRALWGKISSRSDDIGAEAL---GRMLTVYPQTKTYFSHWADLSPGSAPVKKH
+# Apply BH correction
+reject, q_values = benjamini_hochberg(p_values, alpha=0.05)
+
+print("Motif  P-value  Q-value  Reject?")
+for i, (p, q, r) in enumerate(zip(p_values, q_values, reject), 1):
+    print(f"  {i}    {p:.3f}   {q:.3f}   {'Yes' if r else 'No'}")
 ```
 
-**Motif FASTA:**
+Output:
 ```
->motif1_seq1 pos_26-30_cons_0.735
-GAEAL
->motif1_seq2 pos_26-30_cons_0.735
-GAEAL
->motif1_seq3 pos_26-30_cons_0.735
-GNNAL
+Motif  P-value  Q-value  Reject?
+  1    0.001   0.005   Yes
+  2    0.012   0.030   Yes
+  3    0.045   0.075   No
+  4    0.078   0.098   No
+  5    0.150   0.150   No
 ```
+
+**Why FDR instead of Bonferroni?**
+- Bonferroni: α_adj = α / m (very conservative, many false negatives)
+- FDR: Controls expected proportion of false discoveries (more powerful)
+- Appropriate when multiple true positives expected (common in motif discovery)
+
+### 3. Effect Size
+
+**Purpose**: Quantify practical significance beyond statistical significance
+
+Small p-values can result from large sample sizes even with tiny effects. Effect size measures magnitude.
+
+**Cohen's d**:
+
+```
+d = (μ_motif - μ_background) / σ_pooled
+```
+
+where:
+- μ_motif = mean conservation in motif
+- μ_background = mean conservation in non-motif regions
+- σ_pooled = pooled standard deviation
+
+**Interpretation**:
+- d < 0.2: Small effect (may not be biologically meaningful)
+- d = 0.5: Medium effect (noticeable)
+- d ≥ 0.8: Large effect (substantial conservation)
+
+**Implementation**:
+
+```python
+def cohens_d(motif_scores, background_scores):
+    """Calculate Cohen's d effect size."""
+    n1 = len(motif_scores)
+    n2 = len(background_scores)
+    
+    mean1 = np.mean(motif_scores)
+    mean2 = np.mean(background_scores)
+    
+    var1 = np.var(motif_scores, ddof=1)
+    var2 = np.var(background_scores, ddof=1)
+    
+    # Pooled standard deviation
+    pooled_std = np.sqrt(((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 2))
+    
+    d = (mean1 - mean2) / pooled_std
+    return d
+```
+
+**EvoMotif requirement**: Report motifs only if p < 0.05 (FDR-corrected) AND d > 0.5
 
 ---
 
-## 8. Advanced Usage
+## API Reference
 
-### 8.1 Custom Conservation Metrics
+### High-Level Function
+
+#### `evomotif.analyze_protein()`
+
+Complete protein analysis pipeline in one function.
+
+**Signature**:
+```python
+evomotif.analyze_protein(
+    protein_name: str,
+    email: str,
+    output_dir: str = None,
+    pdb_id: str = None,
+    max_sequences: int = 50,
+    min_conservation: float = 0.70,
+    window_sizes: List[int] = [7, 9, 11, 13, 15],
+    threads: int = 4,
+    verbose: bool = False
+) -> AnalysisResults
+```
+
+**Parameters**:
+- `protein_name` (str): Protein name for NCBI query (e.g., "hemoglobin", "p53")
+- `email` (str): Email for NCBI Entrez (required by NCBI policy)
+- `output_dir` (str, optional): Output directory. Default: `{protein_name}_results/`
+- `pdb_id` (str, optional): PDB ID for structure mapping
+- `max_sequences` (int): Maximum sequences to retrieve. Default: 50
+- `min_conservation` (float): Conservation threshold for motifs. Range: [0, 1]. Default: 0.70
+- `window_sizes` (list of int): Window sizes for scanning. Default: [7, 9, 11, 13, 15]
+- `threads` (int): CPU threads for MAFFT. Default: 4
+- `verbose` (bool): Print progress messages. Default: False
+
+**Returns**:
+- `AnalysisResults` object with attributes:
+  - `.motifs`: List of dicts with motif information
+  - `.conservation_scores`: NumPy array of per-position scores
+  - `.alignment`: BioPython MultipleSeqAlignment
+  - `.tree`: ETE3 Tree object
+  - `.data`: Dict with summary statistics
+
+**Methods on returned object**:
+- `.summary()`: Print formatted summary
+- `.export_json(path)`: Save results as JSON
+- `.get_file(name)`: Get path to specific output file
+
+**Example**:
+```python
+results = evomotif.analyze_protein("p53", "user@email.com")
+
+# Access motifs
+for motif in results.motifs:
+    print(f"{motif['sequence']}: conservation={motif['conservation']:.3f}")
+
+# Get files
+print(f"Alignment: {results.get_file('alignment')}")
+print(f"Tree: {results.get_file('tree')}")
+
+# Export
+results.export_json("p53_results.json")
+```
+
+### Module-Level Classes
+
+#### `SequenceRetriever`
+
+Retrieve sequences from NCBI.
+
+```python
+from evomotif.retrieval import SequenceRetriever
+
+retriever = SequenceRetriever(email="your@email.com")
+sequences = retriever.fetch_sequences(
+    query="hemoglobin",
+    max_results=100,
+    database="protein"
+)
+```
+
+**Methods**:
+- `fetch_sequences(query, max_results=50, database="protein")`: Returns list of SeqRecord
+- `filter_quality(sequences)`: Remove low-quality sequences
+- `remove_redundancy(sequences, threshold=0.95)`: Cluster and select representatives
+
+#### `SequenceAligner`
+
+Perform multiple sequence alignment.
+
+```python
+from evomotif.alignment import SequenceAligner
+
+aligner = SequenceAligner(threads=8)
+alignment = aligner.align(
+    sequences,
+    output="aligned.fasta",
+    method="mafft"
+)
+```
+
+**Methods**:
+- `align(sequences, output=None)`: Run MAFFT, returns MultipleSeqAlignment
+- `check_quality(alignment)`: Calculate quality metrics
+
+#### `ConservationScorer`
+
+Calculate conservation scores.
 
 ```python
 from evomotif.conservation import ConservationScorer
 
 scorer = ConservationScorer()
-
-# Shannon entropy only
-shannon = scorer.calculate_shannon_entropy(alignment)
-
-# BLOSUM62 only
-blosum = scorer.calculate_blosum_score(alignment)
-
-# Custom weighting
-custom = scorer.calculate_conservation_scores(
+conservation = scorer.calculate_conservation_scores(
     alignment,
     method="combined",
-    weights=(0.7, 0.3)  # 70% Shannon, 30% BLOSUM
+    weights=(0.5, 0.5)
 )
 ```
 
-### 8.2 Advanced Motif Discovery
+**Methods**:
+- `calculate_conservation_scores(alignment, method='combined', weights=(0.5, 0.5))`: Returns NumPy array
+- `shannon_entropy(alignment)`: Shannon entropy scores
+- `blosum_score(alignment)`: BLOSUM62 scores
+
+**Options for `method`**:
+- `"shannon"`: Shannon entropy only
+- `"blosum"`: BLOSUM62 only
+- `"combined"`: Weighted combination (recommended)
+
+#### `MotifFinder`
+
+Discover conserved motifs.
 
 ```python
-from evomotif.motif_discovery import MotifDiscoverer
+from evomotif.motif_discovery import MotifFinder
 
-# Strict criteria for high-confidence motifs
-strict_discoverer = MotifDiscoverer(
-    window_sizes=[9, 11],           # Focus on medium-length
-    min_conservation=0.80,          # Higher threshold
-    max_std=0.10,                   # Lower variability
-    min_gap_free=0.90               # Fewer gaps allowed
-)
-
-# Permissive criteria for exploratory analysis
-permissive_discoverer = MotifDiscoverer(
-    window_sizes=[5, 7, 9, 11, 13, 15, 17, 19],
-    min_conservation=0.60,
-    max_std=0.20,
-    min_gap_free=0.60
+finder = MotifFinder()
+motifs = finder.find_motifs(
+    conservation_scores,
+    threshold=0.70,
+    window_sizes=[7, 9, 11],
+    max_overlap=0.5
 )
 ```
 
-### 8.3 Custom Statistical Tests
+**Methods**:
+- `find_motifs(conservation, threshold, window_sizes)`: Returns list of motif dicts
+- `validate_motifs(motifs, conservation)`: Apply statistical tests
+
+#### `PhylogenyBuilder`
+
+Build phylogenetic tree.
 
 ```python
-from evomotif.stats import StatisticalAnalyzer
+from evomotif.phylogeny import PhylogenyBuilder
 
-analyzer = StatisticalAnalyzer()
-
-# Custom permutation test
-def my_statistic(data):
-    return np.percentile(data, 90)  # 90th percentile
-
-result = analyzer.permutation_test(
-    observed_statistic=0.85,
-    data=conservation_scores,
-    statistic_func=my_statistic,
-    n_permutations=10000,
-    alternative='greater'
+builder = PhylogenyBuilder()
+tree = builder.build_tree(
+    alignment,
+    method="fasttree",
+    output="tree.nwk"
 )
 ```
 
-### 8.4 Batch Analysis
+**Methods**:
+- `build_tree(alignment, method='fasttree')`: Returns ETE3 Tree
+- `plot_tree(tree, output='tree.png')`: Visualize tree
 
-```python
-proteins = ["p53", "BRCA1", "EGFR", "TP53", "MYC"]
-all_results = {}
+#### `StructureMapper`
 
-for protein in proteins:
-    try:
-        results = evomotif.analyze_protein(
-            protein,
-            "your@email.com",
-            output_dir=f"batch_results/{protein}"
-        )
-        all_results[protein] = results
-        print(f"✓ {protein}: {len(results.motifs)} motifs found")
-    except Exception as e:
-        print(f"✗ {protein}: {str(e)}")
-
-# Compare results
-for protein, results in all_results.items():
-    print(f"{protein}: {results.data['mean_conservation']:.3f} mean conservation")
-```
-
-### 8.5 Integration with AlphaFold
+Map conservation to 3D structure.
 
 ```python
 from evomotif.structure import StructureMapper
 
 mapper = StructureMapper()
+mapper.map_conservation_to_structure(
+    pdb_file="1TUP.pdb",
+    conservation_scores=conservation,
+    output="conserved.pdb"
+)
+```
 
-# Load AlphaFold structure
-af_structure = mapper.download_structure(
-    pdb_id="AF-P04637",  # AlphaFold ID for p53
-    output_dir="alphafold_structures/"
+**Methods**:
+- `map_conservation_to_structure(pdb_file, conservation, output)`: Write PDB with conservation in B-factor
+- `get_alphafold_confidence(pdb_file, chain='A')`: Extract pLDDT scores from AlphaFold structure
+
+---
+
+## Implementation Guide
+
+### Basic Workflow
+
+```python
+import evomotif
+
+# One-line analysis
+results = evomotif.analyze_protein("myprotein", "email@example.com")
+
+# View results
+print(results.summary())
+
+# Export
+results.export_json("results.json")
+```
+
+### Custom Workflow
+
+```python
+from evomotif.retrieval import SequenceRetriever
+from evomotif.alignment import SequenceAligner
+from evomotif.conservation import ConservationScorer
+from evomotif.motif_discovery import MotifFinder
+from evomotif.stats import StatisticalValidator
+from evomotif.phylogeny import PhylogenyBuilder
+
+# Step 1: Retrieve
+retriever = SequenceRetriever(email="email@example.com")
+sequences = retriever.fetch_sequences("p53", max_results=100)
+print(f"Retrieved {len(sequences)} sequences")
+
+# Step 2: Align
+aligner = SequenceAligner(threads=8)
+alignment = aligner.align(sequences, output="p53_aligned.fasta")
+print(f"Alignment: {alignment.get_alignment_length()} positions")
+
+# Step 3: Conservation
+scorer = ConservationScorer()
+conservation = scorer.calculate_conservation_scores(
+    alignment,
+    method="combined",
+    weights=(0.6, 0.4)  # Emphasize Shannon
 )
 
-# Extract pLDDT confidence scores
-confidence = mapper.get_alphafold_confidence(af_structure, chain_id='A')
+# Step 4: Find motifs
+finder = MotifFinder()
+motifs = finder.find_motifs(
+    conservation,
+    threshold=0.75,
+    window_sizes=[7, 9, 11]
+)
+print(f"Found {len(motifs)} candidate motifs")
 
-# Correlate with conservation
-from scipy.stats import pearsonr
+# Step 5: Validate
+validator = StatisticalValidator()
+validated_motifs = validator.validate_motifs(
+    motifs,
+    conservation,
+    method="permutation",
+    n_permutations=10000,
+    fdr_alpha=0.05
+)
+print(f"{len(validated_motifs)} motifs pass statistical tests")
 
-# Align positions
-common_positions = set(confidence.keys()) & set(range(len(conservation)))
-conf_values = [confidence[p] for p in sorted(common_positions)]
-cons_values = [conservation[p] for p in sorted(common_positions)]
+# Step 6: Phylogeny
+builder = PhylogenyBuilder()
+tree = builder.build_tree(alignment, output="p53_tree.nwk")
 
-r, p_value = pearsonr(conf_values, cons_values)
-print(f"Conservation vs. pLDDT: r={r:.3f}, p={p_value:.2e}")
+# Step 7: Results
+for motif in validated_motifs:
+    print(f"\nMotif: {motif['sequence']}")
+    print(f"  Position: {motif['start']}-{motif['end']}")
+    print(f"  Conservation: {motif['conservation']:.3f}")
+    print(f"  P-value: {motif['p_value']:.2e}")
+    print(f"  Effect size: {motif['effect_size']:.2f}")
+```
+
+### Batch Analysis
+
+```python
+import evomotif
+import json
+
+proteins = ["p53", "BRCA1", "EGFR", "MYC", "KRAS"]
+results_summary = {}
+
+for protein in proteins:
+    print(f"\nAnalyzing {protein}...")
+    
+    results = evomotif.analyze_protein(
+        protein,
+        "email@example.com",
+        output_dir=f"./results/{protein}"
+    )
+    
+    results_summary[protein] = {
+        'n_sequences': len(results.alignment),
+        'n_motifs': len(results.motifs),
+        'mean_conservation': float(results.data['mean_conservation']),
+        'max_conservation': float(results.data['max_conservation'])
+    }
+
+# Save summary
+with open("batch_summary.json", "w") as f:
+    json.dump(results_summary, f, indent=2)
+
+print("\nBatch analysis complete:")
+for protein, data in results_summary.items():
+    print(f"{protein}: {data['n_motifs']} motifs, "
+          f"mean conservation={data['mean_conservation']:.3f}")
+```
+
+### Integration with AlphaFold
+
+```python
+from evomotif.structure import StructureMapper
+import evomotif
+
+# Analyze protein
+results = evomotif.analyze_protein("p53", "email@example.com")
+
+# Get AlphaFold structure (download from AlphaFold DB)
+alphafold_pdb = "AF-P04637-F1-model_v4.pdb"
+
+# Map conservation
+mapper = StructureMapper()
+mapper.map_conservation_to_structure(
+    pdb_file=alphafold_pdb,
+    conservation_scores=results.conservation_scores,
+    output="p53_conserved.pdb"
+)
+
+# Extract pLDDT confidence
+confidence = mapper.get_alphafold_confidence(alphafold_pdb, chain='A')
+
+# Correlate conservation with confidence
+import numpy as np
+correlation = np.corrcoef(results.conservation_scores, confidence)[0, 1]
+print(f"Conservation-confidence correlation: {correlation:.3f}")
+
+# High correlation suggests conserved regions are structurally confident
 ```
 
 ---
 
-## 9. Best Practices
+## Use Cases
 
-### 9.1 Sequence Selection
+### 1. Mutagenesis Planning
 
-**Recommendations:**
-- **Minimum 10 sequences**: Basic statistics
-- **Optimal 50-100 sequences**: Robust conservation detection
-- **Maximum 500 sequences**: Comprehensive but slow
+**Scenario**: Design mutations to probe protein function
 
-**Taxonomic Diversity:**
-- Include sequences from multiple domains/kingdoms
-- Avoid over-representation of closely related species
-- Model organisms provide high-quality annotations
+**Approach**:
+- Identify highly conserved residues (conservation > 0.85)
+- These are likely functionally critical
+- Mutations here will likely disrupt function
+- Conversely, low conservation residues (< 0.4) are safe mutation targets
 
-### 9.2 Parameter Tuning
-
-**Conservation Threshold:**
+**Example**:
 ```python
-# Strict (high confidence, fewer motifs)
-min_conservation = 0.80
+results = evomotif.analyze_protein("kinase_of_interest", "email@example.com")
 
-# Standard (balanced)
-min_conservation = 0.70
+# Find critical residues
+critical_positions = []
+for i, score in enumerate(results.conservation_scores, start=1):
+    if score > 0.85:
+        residue = results.alignment[0][i-1]  # Reference sequence
+        critical_positions.append((i, residue, score))
 
-# Permissive (exploratory, more motifs)
-min_conservation = 0.60
+print("Critical residues (avoid mutating):")
+for pos, res, score in critical_positions:
+    print(f"  Position {pos}: {res} (conservation={score:.3f})")
+
+# Find variable residues (safe to mutate)
+variable_positions = []
+for i, score in enumerate(results.conservation_scores, start=1):
+    if score < 0.4:
+        residue = results.alignment[0][i-1]
+        variable_positions.append((i, residue, score))
+
+print("\nVariable residues (safe mutation targets):")
+for pos, res, score in variable_positions:
+    print(f"  Position {pos}: {res} (conservation={score:.3f})")
 ```
 
-**Motif Length:**
+### 2. Disease Variant Interpretation
+
+**Scenario**: Assess pathogenicity of missense mutations
+
+**Approach**:
+- Mutations in highly conserved positions more likely pathogenic
+- Check if mutation alters physicochemical properties
+- Compare to BLOSUM62 penalty
+
+**Example**:
 ```python
-# Short functional sites (kinase sites, etc.)
-window_sizes = [5, 7, 9]
+results = evomotif.analyze_protein("BRCA1", "email@example.com")
 
-# Medium motifs (binding sites)
-window_sizes = [7, 9, 11, 13, 15]
+# Analyze specific mutation: R175H (Arg -> His at position 175)
+position = 175
+conservation = results.conservation_scores[position - 1]
+alignment_col = results.alignment[:, position - 1]
 
-# Long domains
-window_sizes = [13, 15, 17, 19, 21]
+print(f"Position {position}:")
+print(f"  Conservation: {conservation:.3f}")
+print(f"  Observed residues: {set(alignment_col)}")
+
+# Check BLOSUM62 penalty for R -> H
+from Bio.Align import substitution_matrices
+blosum62 = substitution_matrices.load("BLOSUM62")
+penalty = blosum62[('R', 'H')]
+
+print(f"  BLOSUM62(R->H): {penalty}")
+
+# Interpretation
+if conservation > 0.8:
+    print("  WARNING: Highly conserved position, mutation likely pathogenic")
+elif conservation > 0.6:
+    print("  CAUTION: Moderately conserved, mutation may affect function")
+else:
+    print("  INFO: Variable position, mutation may be tolerated")
 ```
 
-### 9.3 Quality Control
+### 3. Functional Domain Annotation
 
-**Check Alignment Quality:**
+**Scenario**: Identify functional domains in unannotated protein
+
+**Approach**:
+- Conserved motifs often correspond to functional domains
+- Map motifs to known domain databases (Pfam, SMART)
+- Use motif patterns to predict function
+
+**Example**:
 ```python
-# Gap percentage should be <20%
-if stats['gap_percentage'] > 20:
-    print("WARNING: High gap percentage, consider:")
-    print("- Using fewer sequences")
-    print("- Filtering for length")
-    print("- Different alignment parameters")
+results = evomotif.analyze_protein("unknown_protein", "email@example.com")
 
-# Sequence identity should be 30-90%
-if stats['mean_identity'] < 30:
-    print("WARNING: Low sequence identity, may not be homologous")
-if stats['mean_identity'] > 90:
-    print("WARNING: High sequence identity, insufficient diversity")
+print(f"Discovered {len(results.motifs)} conserved motifs:")
+for i, motif in enumerate(results.motifs, 1):
+    print(f"\nMotif {i}:")
+    print(f"  Sequence: {motif['sequence']}")
+    print(f"  Position: {motif['start']}-{motif['end']}")
+    print(f"  Conservation: {motif['conservation']:.3f}")
+    print(f"  Length: {len(motif['sequence'])} residues")
+    
+    # Check for known motifs (manual or via pattern matching)
+    sequence = motif['sequence']
+    if 'DFG' in sequence:
+        print("  -> Possible kinase catalytic motif")
+    elif 'CXXC' in sequence:
+        print("  -> Possible zinc-binding motif")
+    elif sequence.count('C') >= 4:
+        print("  -> Possible cysteine-rich domain")
 ```
 
-**Validate Conservation Scores:**
-```python
-# Check dynamic range
-conservation_range = max(conservation) - min(conservation)
-if conservation_range < 0.3:
-    print("WARNING: Low conservation range, all positions similar")
+### 4. Protein Engineering
 
-# Check for bimodal distribution (expected)
-import matplotlib.pyplot as plt
-plt.hist(conservation, bins=20)
-plt.xlabel('Conservation Score')
-plt.ylabel('Frequency')
-plt.title('Conservation Distribution')
-plt.show()
+**Scenario**: Design minimal functional construct
+
+**Approach**:
+- Identify conserved core regions
+- Remove variable flanking regions
+- Create truncated but functional variant
+
+**Example**:
+```python
+results = evomotif.analyze_protein("large_protein", "email@example.com")
+
+# Find conserved core (longest consecutive high-conservation region)
+core_start, core_end = None, None
+current_start = None
+max_length = 0
+
+for i, score in enumerate(results.conservation_scores):
+    if score > 0.65:  # Threshold for "core"
+        if current_start is None:
+            current_start = i
+    else:
+        if current_start is not None:
+            length = i - current_start
+            if length > max_length:
+                max_length = length
+                core_start = current_start
+                core_end = i
+            current_start = None
+
+print(f"Conserved core: positions {core_start}-{core_end} ({max_length} residues)")
+print(f"Original protein: {len(results.conservation_scores)} residues")
+print(f"Minimal construct: {core_start}-{core_end}")
+print(f"Reduction: {100 * (1 - max_length/len(results.conservation_scores)):.1f}%")
+
+# Extract core sequence
+core_sequence = str(results.alignment[0][core_start:core_end].seq)
+print(f"\nCore sequence:\n{core_sequence}")
 ```
 
-### 9.4 Interpretation Guidelines
+### 5. Phylogenetic Analysis
 
-**Conservation Score Interpretation:**
-- **0.90-1.00**: Catalytic residues, structural cores, critical interactions
-- **0.75-0.90**: Functional sites, binding pockets, domain interfaces
-- **0.60-0.75**: Moderately conserved, potential functional importance
-- **0.40-0.60**: Variable regions, loops, linkers
-- **0.00-0.40**: Highly variable, likely non-functional
+**Scenario**: Understand evolutionary relationships
 
-**Statistical Significance:**
-- **p < 0.001**: Very strong evidence
-- **p < 0.01**: Strong evidence
-- **p < 0.05**: Moderate evidence
-- **p ≥ 0.05**: Insufficient evidence
+**Approach**:
+- Use phylogenetic tree from EvoMotif
+- Map conservation to tree branches
+- Identify clade-specific conservation patterns
 
-**Effect Sizes:**
-- **|d| < 0.2**: Small effect, limited practical importance
-- **|d| = 0.5**: Medium effect, notable difference
-- **|d| > 0.8**: Large effect, substantial conservation
+**Example**:
+```python
+results = evomotif.analyze_protein("cytochrome_c", "email@example.com")
+
+# Analyze tree
+tree = results.tree
+print(f"Tree has {len(tree)} leaves")
+
+# Find most distant sequences
+leaf_names = [leaf.name for leaf in tree.get_leaves()]
+distances = []
+for i, leaf1 in enumerate(tree.get_leaves()):
+    for leaf2 in tree.get_leaves()[i+1:]:
+        dist = tree.get_distance(leaf1, leaf2)
+        distances.append((leaf1.name, leaf2.name, dist))
+
+distances.sort(key=lambda x: x[2], reverse=True)
+print("\nMost divergent sequences:")
+for name1, name2, dist in distances[:5]:
+    print(f"  {name1} <-> {name2}: distance={dist:.3f}")
+```
 
 ---
 
-## 10. Troubleshooting
+## Limitations
 
-### 10.1 Common Issues
+### 1. Alignment Quality Dependency
 
-**Issue: No sequences retrieved**
-```
-Solution:
-1. Check protein name spelling
-2. Try alternative names (gene symbol vs. protein name)
-3. Verify NCBI email is valid
-4. Check internet connection
-5. Try with organism filter: "hemoglobin alpha AND human[organism]"
-```
+**Issue**: Conservation scores are only as good as the alignment
 
-**Issue: Alignment fails**
-```
-Solution:
-1. Verify MAFFT is installed: `mafft --version`
-2. Check sequence file is not empty
-3. Ensure sequences are protein (not DNA)
-4. Try fewer sequences if memory error
-5. Check file permissions
-```
+**Impact**:
+- Misaligned regions produce spurious conservation patterns
+- Gaps can artificially inflate/deflate conservation
 
-**Issue: No motifs found**
-```
-Solution:
-1. Lower min_conservation threshold (try 0.60)
-2. Use more sequences (target 50-100)
-3. Check conservation scores distribution
-4. Try different window sizes
-5. Verify alignment quality (gap percentage)
-```
+**Mitigation**:
+- Always inspect alignment quality metrics
+- Consider manual curation for critical applications
+- Use high-quality sequences (avoid partial or fragmented sequences)
 
-**Issue: All p-values are 1.0**
-```
-Solution:
-1. Increase n_permutations (try 50,000)
-2. Check conservation scores are not uniform
-3. Verify motif discovery found real patterns
-4. Review statistical test implementation
-```
-
-### 10.2 Performance Optimization
-
-**Speed Up Analysis:**
+**Check alignment quality**:
 ```python
-# Use more threads
+from evomotif.alignment import AlignmentQuality
+
+quality = AlignmentQuality(alignment)
+print(f"Gap %: {quality.gap_percentage():.1f}")  # Should be < 20%
+print(f"Mean identity: {quality.mean_pairwise_identity():.1f}%")  # 30-70% typical
+
+# Flag problematic regions
+problematic = quality.identify_problematic_regions(gap_threshold=0.5)
+if problematic:
+    print(f"Warning: {len(problematic)} regions with >50% gaps")
+```
+
+### 2. Taxonomic Bias
+
+**Issue**: NCBI database overrepresents certain clades (vertebrates, model organisms)
+
+**Impact**:
+- May miss lineage-specific conservation patterns
+- Bias toward well-studied proteins
+
+**Mitigation**:
+- Manually curate sequence set if studying specific lineages
+- Use taxonomic filters in NCBI query
+- Consider UniProt as alternative database
+
+### 3. Short Proteins
+
+**Issue**: Proteins < 50 residues have insufficient signal
+
+**Impact**:
+- High false positive rate
+- Statistical tests underpowered
+
+**Mitigation**:
+- Use stricter thresholds (min_conservation > 0.80)
+- Require larger sample sizes (max_sequences > 100)
+- Validate with structural data
+
+### 4. Highly Divergent Families
+
+**Issue**: Distant homologs (< 20% identity) difficult to align
+
+**Impact**:
+- Poor alignment quality
+- Unreliable conservation scores
+
+**Mitigation**:
+- Consider structure-based alignment (PROMALS3D, MATT)
+- Focus on well-conserved domains
+- Use profile-based methods (PSI-BLAST) for retrieval
+
+### 5. Computational Cost
+
+**Issue**: Large proteins with many sequences are slow
+
+**Performance**:
+- Alignment: O(N² × L) where N = sequences, L = length
+- Tree building: O(N² × L)
+- Memory: O(N × L)
+
+**Example**: BRCA1 (1863 residues) with 500 sequences:
+- Alignment: ~45 minutes
+- Memory: ~10 GB
+
+**Mitigation**:
+- Reduce sequences (50-100 usually sufficient)
+- Use fewer threads if memory-limited
+- Run on HPC cluster for large projects
+
+---
+
+## Troubleshooting
+
+### NCBI Errors
+
+**Error**: `HTTP Error 429: Too Many Requests`
+
+**Cause**: NCBI rate limiting
+
+**Solution**:
+```python
+from evomotif.retrieval import SequenceRetriever
+
+# Add delay between requests
+retriever = SequenceRetriever(email="email@example.com", delay=1.0)
+sequences = retriever.fetch_sequences("protein", max_results=100)
+```
+
+### MAFFT Not Found
+
+**Error**: `Command 'mafft' not found`
+
+**Solution**:
+```bash
+# Verify installation
+which mafft
+
+# If not found, install:
+conda install -c bioconda mafft
+
+# Or specify path explicitly
+export PATH="/path/to/mafft/bin:$PATH"
+```
+
+### Low Conservation Scores
+
+**Issue**: All conservation scores are low (< 0.5)
+
+**Possible causes**:
+1. Protein family is highly divergent
+2. Retrieved sequences are not true homologs
+3. Alignment quality is poor
+
+**Diagnosis**:
+```python
+# Check alignment identity
+from evomotif.alignment import AlignmentQuality
+quality = AlignmentQuality(alignment)
+print(f"Mean pairwise identity: {quality.mean_pairwise_identity():.1f}%")
+
+# If < 20%, sequences may be too divergent
+```
+
+**Solution**:
+- Use more stringent retrieval (reduce max_sequences)
+- Filter by E-value or identity threshold
+- Consider profile-based search
+
+### No Motifs Found
+
+**Issue**: No motifs pass statistical tests
+
+**Possible causes**:
+1. Threshold too strict
+2. Protein has no conserved regions
+3. Insufficient sequences
+
+**Solution**:
+```python
+# Try lower threshold
 results = evomotif.analyze_protein(
-    protein,
-    email,
-    threads=8  # Use all available cores
+    "protein",
+    "email@example.com",
+    min_conservation=0.60  # Lower from default 0.70
 )
 
-# Reduce sequences for quick tests
+# Or increase sequences
 results = evomotif.analyze_protein(
-    protein,
-    email,
-    max_sequences=20  # Faster but less robust
-)
-
-# Skip optional analyses
-pipeline = evomotif.EvoMotifPipeline()
-results = pipeline.analyze(
-    protein,
-    email,
-    skip_tree=True,      # Skip phylogenetic tree
-    skip_structure=True  # Skip structure mapping
+    "protein",
+    "email@example.com",
+    max_sequences=150  # Increase from default 50
 )
 ```
 
-**Memory Optimization:**
-```python
-# For large analyses (>500 sequences)
-import gc
+### Memory Errors
 
-for chunk in sequence_chunks:
-    results = analyze_chunk(chunk)
-    process_results(results)
-    gc.collect()  # Free memory
+**Error**: `MemoryError` or system slowdown
+
+**Cause**: Large alignment (many sequences × long protein)
+
+**Solution**:
+```python
+# Reduce sequences
+results = evomotif.analyze_protein(
+    "large_protein",
+    "email@example.com",
+    max_sequences=50  # Reduce from 100+
+)
+
+# Or process in chunks (for batch analysis)
+proteins = ["p1", "p2", "p3", ...]
+for protein in proteins:
+    results = evomotif.analyze_protein(protein, email, max_sequences=30)
+    # Process results immediately, then release memory
+    del results
 ```
 
-### 10.3 Error Messages
+---
 
-| Error | Meaning | Solution |
-|-------|---------|----------|
-| `ModuleNotFoundError: evomotif` | Not installed | `pip install -e .` |
-| `FileNotFoundError: mafft` | MAFFT not in PATH | Install MAFFT |
-| `HTTPError: 429` | Too many NCBI requests | Add delay, get API key |
-| `ValueError: Empty alignment` | No sequences aligned | Check input sequences |
-| `MemoryError` | Insufficient RAM | Reduce sequence count |
+## Performance Optimization
 
-### 10.4 Getting Help
+### Parallelization
 
-**Check Documentation:**
-1. Read error message carefully
-2. Search this guide (Ctrl+F)
-3. Review example code in `examples/`
-4. Check STATISTICS_METHODS.md for math details
-
-**Debug Mode:**
 ```python
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
-# Now run analysis - will print detailed logs
-results = evomotif.analyze_protein(protein, email, verbose=True)
+# Use more threads for alignment
+results = evomotif.analyze_protein(
+    "protein",
+    "email@example.com",
+    threads=16  # Scales well up to ~8-16 cores
+)
 ```
 
-**Report Issues:**
-- GitHub Issues: https://github.com/yourusername/EvoMotif/issues
-- Include: Error message, code snippet, Python version
-- Provide: Input data (if possible), expected behavior
+### Caching
+
+```python
+# Save intermediate results for re-analysis with different parameters
+from evomotif.pipeline import EvoMotifPipeline
+
+pipeline = EvoMotifPipeline(cache_dir="./cache")
+
+# First run: retrieval and alignment cached
+results1 = pipeline.analyze("protein", "email", min_conservation=0.70)
+
+# Second run: reuses cached alignment, only re-runs motif finding
+results2 = pipeline.analyze("protein", "email", min_conservation=0.75)
+```
+
+### Batch Processing
+
+```python
+# Parallel batch processing
+from multiprocessing import Pool
+import evomotif
+
+def analyze_protein_wrapper(args):
+    protein, email = args
+    return evomotif.analyze_protein(protein, email)
+
+proteins = ["p53", "BRCA1", "EGFR", "MYC"]
+args = [(p, "email@example.com") for p in proteins]
+
+# Run in parallel (careful with memory)
+with Pool(4) as pool:
+    results_list = pool.map(analyze_protein_wrapper, args)
+```
 
 ---
 
-## Appendix A: Mathematical Foundations
+## Contact & Support
 
-### Shannon Entropy Derivation
+- **Issues**: https://github.com/yourusername/evomotif/issues
+- **Email**: taha@example.com
+- **Documentation**: https://github.com/yourusername/evomotif/docs
 
-Shannon entropy quantifies uncertainty in a probability distribution:
-
-$$H(X) = -\sum_{i=1}^{n} p(x_i) \log_2 p(x_i)$$
-
-**Properties:**
-- $H(X) = 0$ when one outcome has probability 1 (no uncertainty)
-- $H(X)$ is maximized when all outcomes are equally likely
-- Measured in bits (log base 2)
-
-**Application to Conservation:**
-- $X$ = amino acid at position $i$
-- $p(x)$ = frequency of amino acid $x$
-- $H = 0$ → perfectly conserved
-- $H = \log_2(20) = 4.322$ → maximum variability
-
-### BLOSUM62 Matrix
-
-**How BLOSUM62 Was Created:**
-1. Collected protein sequence blocks (aligned, conserved regions)
-2. Counted observed amino acid pairs
-3. Calculated expected frequencies under random model
-4. Computed log-odds ratio:
-
-$$S(a,b) = \lambda \log_2 \frac{P(a,b)}{P(a)P(b)}$$
-
-Where:
-- $P(a,b)$ = observed frequency of (a,b) pair
-- $P(a)P(b)$ = expected frequency under independence
-- $\lambda$ = scaling factor (2 bits)
-
-**"62" in BLOSUM62:**
-- Sequences >62% identical were clustered
-- Representative sequence chosen from each cluster
-- Removes bias from over-represented sequences
-
-### Multiple Testing Correction
-
-**Family-Wise Error Rate (FWER):**
-$$P(\text{at least one false positive}) \leq \alpha$$
-
-**False Discovery Rate (FDR):**
-$$E\left[\frac{\text{False Positives}}{\text{Total Rejections}}\right] \leq \alpha$$
-
-**Benjamini-Hochberg Procedure:**
-1. Order p-values: $p_{(1)} \leq p_{(2)} \leq \cdots \leq p_{(m)}$
-2. Find largest $k$ where: $p_{(k)} \leq \frac{k}{m} \alpha$
-3. Reject null hypotheses for tests $1, 2, \ldots, k$
-
-**Why FDR for Motif Discovery:**
-- Expect multiple true positives (many conserved regions)
-- More power than FWER control
-- Controls expected proportion of false discoveries
+For bug reports, please include:
+- EvoMotif version
+- Python version
+- Operating system
+- Full error traceback
+- Minimal reproducible example
 
 ---
 
-## Appendix B: Glossary
+## References
 
-**Conservation Score**: Quantitative measure of how similar amino acids are across species at a given position (0 = variable, 1 = conserved)
+1. Shannon, C.E. (1948). A mathematical theory of communication. *Bell System Technical Journal*, 27(3), 379-423.
 
-**Motif**: Short sequence pattern (typically 5-15 residues) that is conserved across multiple proteins
+2. Henikoff, S. & Henikoff, J.G. (1992). Amino acid substitution matrices from protein blocks. *PNAS*, 89(22), 10915-10919.
 
-**BLOSUM62**: Substitution matrix capturing evolutionary relationships between amino acids, derived from aligned protein blocks
+3. Benjamini, Y. & Hochberg, Y. (1995). Controlling the false discovery rate: a practical and powerful approach to multiple testing. *Journal of the Royal Statistical Society B*, 57(1), 289-300.
 
-**Shannon Entropy**: Information-theoretic measure of variability/uncertainty in a distribution
+4. Katoh, K. & Standley, D.M. (2013). MAFFT multiple sequence alignment software version 7: improvements in performance and usability. *Molecular Biology and Evolution*, 30(4), 772-780.
 
-**p-value**: Probability of observing data as extreme as the observed data, assuming the null hypothesis is true
+5. Price, M.N., Dehal, P.S., & Arkin, A.P. (2010). FastTree 2 – approximately maximum-likelihood trees for large alignments. *PLoS ONE*, 5(3), e9490.
 
-**FDR**: False Discovery Rate - expected proportion of false positives among rejected null hypotheses
+6. Cohen, J. (1988). *Statistical Power Analysis for the Behavioral Sciences*. 2nd ed. Hillsdale, NJ: Lawrence Erlbaum.
 
-**pLDDT**: per-residue confidence score from AlphaFold, ranging 0-100 (>90 = high confidence)
-
-**Effect Size**: Standardized measure of the magnitude of a difference, independent of sample size
-
-**Gap Frequency**: Proportion of sequences with a gap (insertion/deletion) at a given alignment position
-
-**Multiple Sequence Alignment (MSA)**: Alignment of three or more biological sequences (DNA, RNA, protein)
-
-**Phylogenetic Tree**: Diagram showing evolutionary relationships among species or sequences
-
----
-
-## Appendix C: References
-
-**Key Publications:**
-
-1. Henikoff S, Henikoff JG (1992). "Amino acid substitution matrices from protein blocks." PNAS 89(22):10915-9.
-
-2. Shannon CE (1948). "A Mathematical Theory of Communication." Bell System Technical Journal 27:379-423.
-
-3. Benjamini Y, Hochberg Y (1995). "Controlling the False Discovery Rate." Journal of the Royal Statistical Society B 57(1):289-300.
-
-4. Katoh K, Standley DM (2013). "MAFFT Multiple Sequence Alignment Software." Molecular Biology and Evolution 30(4):772-780.
-
-5. Price MN, Dehal PS, Arkin AP (2010). "FastTree 2 - Approximately Maximum-Likelihood Trees for Large Alignments." PLoS ONE 5(3):e9490.
-
-**Useful Resources:**
-
-- NCBI Protein Database: https://www.ncbi.nlm.nih.gov/protein/
-- PDB Structure Database: https://www.rcsb.org/
-- AlphaFold Database: https://alphafold.ebi.ac.uk/
-- MAFFT Documentation: https://mafft.cbrc.jp/alignment/software/
-- Biopython Tutorial: https://biopython.org/DIST/docs/tutorial/Tutorial.html
-
----
-
-**Document Version:** 1.0.0  
-**Last Updated:** December 23, 2025  
-**Authors:** EvoMotif Development Team  
-**License:** MIT
-
----
-
-*For questions, issues, or contributions, visit: https://github.com/yourusername/EvoMotif*
+7. Landau, M. et al. (2005). ConSurf 2005: the projection of evolutionary conservation scores of residues on protein structures. *Nucleic Acids Research*, 33, W299-W302.
