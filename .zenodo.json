@@ -1,6 +1,6 @@
 {
-  "title": "EvoMotif: Evolution-Driven Framework for Protein Motif Discovery",
-  "description": "EvoMotif is a comprehensive Python framework that combines evolutionary analysis, structural data, and statistical methods to discover and characterize protein motifs. It integrates sequence retrieval, multiple sequence alignment, phylogenetic analysis, conservation scoring, motif discovery, structural mapping, and variant analysis into a unified pipeline.",
+  "title": "EvoMotif v0.1.5: Evolutionary Protein Motif Discovery",
+  "description": "<h1>EvoMotif v0.1.5: Evolutionary Protein Motif Discovery</h1><h2>Overview</h2><p>EvoMotif is a Python library for discovering evolutionarily conserved protein motifs through multi-species sequence analysis. It combines information theory, evolutionary substitution matrices, and rigorous statistical validation to identify functionally important regions in proteins.</p><h2>Core Algorithms</h2><h3>1. Conservation Scoring</h3><p>EvoMotif uses a dual-metric approach to quantify evolutionary constraint at each alignment position:</p><h4>Shannon Entropy (Information-Theoretic Variability)</h4><p>The Shannon entropy H(i) at position i measures the variability of amino acids: <strong>H(i) = −∑ p<sub>a</sub>(i) × log₂ p<sub>a</sub>(i)</strong> where p<sub>a</sub>(i) is the frequency of amino acid <em>a</em> at position <em>i</em>. The normalized conservation score is: <strong>C<sub>shannon</sub>(i) = 1 − H(i) / log₂(20)</strong></p><ul><li>Range: [0, 1]</li><li>Interpretation: 1 = perfect conservation, 0 = maximum variability</li></ul><h4>BLOSUM62 Score (Evolutionary Substitution Patterns)</h4><p>The BLOSUM62 score B(i) captures functional constraints based on evolutionary substitution data. Normalized to [0, 1], positive scores indicate functionally similar substitutions (conservative) while negative scores indicate functionally dissimilar substitutions (radical).</p><h4>Combined Conservation Score</h4><p>The final conservation score combines both metrics with equal weighting: <strong>C<sub>final</sub>(i) = 0.5 × C<sub>shannon</sub>(i) + 0.5 × B<sub>norm</sub>(i)</strong></p><h3>2. Motif Discovery Algorithm</h3><p>Sliding window approach with adaptive thresholds:</p><ol><li>Window Scanning: Scan alignment with multiple window sizes (5-21 residues)</li><li>Scoring: Calculate mean conservation score for each window</li><li>Filtering: Retain windows with mean conservation ≥ threshold (default: 0.70)</li><li>Overlap Resolution: When windows overlap, keep the highest-scoring window</li><li>Consecutive Merging: Merge adjacent high-conservation windows</li><li>Gap Filtering: Require ≥70% sequence coverage</li></ol><h3>3. Statistical Validation</h3><h4>Permutation Testing</h4><p>For each candidate motif, we test the null hypothesis that the observed conservation pattern is indistinguishable from random. Generate null distribution by randomly shuffling conservation scores 10,000 times and calculate p-value.</p><h4>False Discovery Rate (FDR) Correction</h4><p>Multiple hypothesis testing requires correction to control false positives. We apply the Benjamini-Hochberg procedure at α = 0.05.</p><h4>Effect Size (Cohen's d)</h4><p>To assess practical significance beyond statistical significance. Only motifs with p &lt; 0.05 (FDR-corrected) AND d &gt; 0.5 are reported.</p><h2>Validation Results</h2><p>Results match known functional sites across multiple test proteins including hemoglobin α-chain, p53 tumor suppressor, and BRCA1. All discovered motifs correspond to experimentally validated functional sites.</p><h2>Key Features</h2><ul><li>Automated sequence retrieval from NCBI</li><li>Multiple sequence alignment with MAFFT</li><li>Dual-metric conservation scoring (Shannon + BLOSUM62)</li><li>Sliding window motif discovery with statistical validation</li><li>Permutation testing with FDR correction</li><li>Phylogenetic tree generation with FastTree</li><li>Structure mapping to PDB files</li><li>Comprehensive output files in standard formats</li></ul><h2>Installation</h2><pre>pip install evomotif</pre><p>External dependencies: mafft, fasttree (install via apt, brew, or conda)</p><h2>Usage Example</h2><pre>import evomotif\nresults = evomotif.analyze_protein(\"hemoglobin\", \"your@email.com\")\nprint(results.summary())</pre><h2>Documentation</h2><ul><li>GitHub: https://github.com/tahagill/EvoMotif</li><li>Complete Guide: https://github.com/tahagill/EvoMotif/blob/main/docs/COMPLETE_GUIDE.md</li><li>PyPI: https://pypi.org/project/evomotif/</li></ul><h2>Citation</h2><p>If you use EvoMotif in your research, please cite: Ahmad, T. (2025). EvoMotif: Evolutionary Protein Motif Discovery and Analysis (v0.1.5). GitHub. https://github.com/tahagill/EvoMotif</p><h2>License</h2><p>MIT License</p>",
   "creators": [
     {
       "name": "Taha Ahmad",
@@ -18,7 +18,11 @@
     "variant-analysis",
     "multiple-sequence-alignment",
     "protein-structure",
-    "computational-biology"
+    "computational-biology",
+    "Shannon-entropy",
+    "BLOSUM62",
+    "permutation-testing",
+    "FDR-correction"
   ],
   "upload_type": "software",
   "access_right": "open",
@@ -28,5 +32,6 @@
       "identifier": "https://github.com/tahagill/EvoMotif",
       "relation": "isSupplementTo"
     }
-  ]
+  ],
+  "version": "0.1.5"
 }
