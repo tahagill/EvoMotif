@@ -101,6 +101,9 @@ data/
 *.html
 *.json
 
+# But keep Zenodo metadata
+!.zenodo.json
+
 # Old/backup files
 *_old.md
 README_old.md

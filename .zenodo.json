@@ -1,0 +1,33 @@
+{
+  "title": "EvoMotif: Evolution-Driven Framework for Protein Motif Discovery",
+  "description": "EvoMotif is a comprehensive Python framework that combines evolutionary analysis, structural data, and statistical methods to discover and characterize protein motifs. It integrates sequence retrieval, multiple sequence alignment, phylogenetic analysis, conservation scoring, motif discovery, structural mapping, and variant analysis into a unified pipeline.",
+  "creators": [
+    {
+      "name": "Taha",
+      "affiliation": "",
+      "orcid": "0000-0000-0000-0000"
+    }
+  ],
+  "license": "MIT",
+  "keywords": [
+    "bioinformatics",
+    "protein-motifs",
+    "evolution",
+    "phylogenetics",
+    "structural-biology",
+    "conservation-analysis",
+    "variant-analysis",
+    "multiple-sequence-alignment",
+    "protein-structure",
+    "computational-biology"
+  ],
+  "upload_type": "software",
+  "access_right": "open",
+  "related_identifiers": [
+    {
+      "scheme": "url",
+      "identifier": "https://github.com/yourusername/EvoMotif",
+      "relation": "isSupplementTo"
+    }
+  ]
+}
