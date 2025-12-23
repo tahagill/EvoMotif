@@ -371,7 +371,7 @@ If you use EvoMotif in your research:
   author = {Taha},
   year = {2025},
   version = {0.1.0},
-  url = {https://github.com/yourusername/evomotif}
+  url = {https://github.com/tahagill/evomotif}
 }
 ```
 
@@ -391,5 +391,5 @@ Key methods implemented in EvoMotif:
 
 ## Support
 
-- **Issues**: https://github.com/yourusername/EvoMotif/issues
-- **Email**: taha@example.com
+- **Issues**: https://github.com/tahagill/EvoMotif/issues
+- **Email**: tahagill99@gmail.com
